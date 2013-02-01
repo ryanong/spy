@@ -3,23 +3,28 @@ require 'test_helper'
 module Insult
   class TestSpy < MiniTest::Unit::TestCase
     class Pen
+      attr_reader :written
+
+      def initialize
+        @written = []
+      end
       def write(string)
+        @written << string
         string
       end
 
       def write_hello
-        "hello"
+        write("hello")
       end
 
       def write_array(*args)
-        args.join(" ")
+        args.each do |arg|
+          write(arg)
+        end
       end
 
       def greet(hello = "hello", name)
-        "#{hello} #{name}"
-      end
-
-      def write_letter
+        write("#{hello} #{name}")
       end
     end
 
@@ -43,6 +48,7 @@ module Insult
       refute pen_write_spy.was_called?
       @pen.write("hello")
       assert pen_write_spy.was_called?
+      assert_empty @pen.written
     end
 
     def test_spy_can_unhook_a_method
