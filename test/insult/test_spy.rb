@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'stringio'
 
 module Insult
   class TestSpy < MiniTest::Unit::TestCase
@@ -29,7 +28,7 @@ module Insult
     end
 
     def test_that_you_cannot_spy_a_non_existent_method
-      assert_raises NoMethodError do
+      assert_raises NameError do
         Spy.on(@pen, :no_method)
       end
     end

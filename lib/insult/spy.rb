@@ -1,89 +1,79 @@
 module Insult
   class Spy
-    attr_reader :base_object
-
-    def initialize(object)
-      @base_object = object
-      @method_spies = {}
+    attr_reader :base_object, :method_name
+    def initialize(object, method_name)
+      @base_object, @method_name = object, method_name
+      reset!
     end
 
-    def watch_method(method_name, ignore_method_doesnt_exist = false)
-      method_name = method_name.to_sym
-      if !ignore_method_doesnt_exist && !base_object.respond_to?(method_name)
-        raise NoMethodError.new("#{base_object.inspect} must have '#{method_name}' as a method")
-      end
+    def hook
+      raise "#{method_name} has already been hooked" if base_object.singleton_methods.include?(method_name)
+      @original_method = base_object.method(method_name)
 
-      if @method_spies[method_name]
-        raise NameError.new("#{method_name} already stubbed")
-      end
+      arity_range = get_arity_range(@original_method.parameters)
+      spy = self
 
-      params = base_object.method(method_name).parameters
-
-      arity = parameters_to_args(params)
-      arity << "&block"
-      vars = parameters_to_vars(params)
-
-      base_object.singleton_class.class_eval <<-EOF, __FILE__, __LINE__ + 1
-        def #{method_name}(#{arity.join(",")})
-          ::Insult::Spy.fetch(self).message_received :#{method_name}, [#{vars.join(",")}], &block
-        end
-      EOF
-      @method_spies[method_name] = MethodSpy.new(@base_object, method_name)
+      @base_object.define_singleton_method(method_name, lambda do |*args, &block|
+        spy.check_arity!(arity_range, args.size)
+        spy.called_with(self,args, &block)
+      end)
     end
 
-    def message_received(method_name, args)
-      @method_spies[method_name].called_with(args)
+    def unhook
+      raise "#{method_name} has not been hooked" unless base_object.singleton_methods.include?(method_name)
+      @original_method = nil
+      @base_object.singleton_class.undef_method method_name
+    end
+
+    def was_called?
+      @calls.size > 0
+    end
+
+    def called_with(object, args, &block)
+      @calls << {object: object, args: args, block: block}
+      nil
+    end
+
+    def reset!
+      @calls = []
+    end
+
+    def check_arity!(arity_range, arity)
+      if arity < arity_range.min
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.min})")
+      elsif arity > arity_range.max
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
+      end
     end
 
     private
 
-    def parameters_to_args(params)
-      params.map do |type,name|
-        name ||= :args
+    def get_arity_range(parameters)
+      min = 0
+      max = 0
+      parameters.each do |type,_|
         case type
         when :req
-          name
+          min += 1
+          max += 1
         when :opt
-          "#{name} = nil"
+          max += 1
         when :rest
-          "*#{name}"
+          max = Float::INFINITY
         end
-      end.compact
-    end
-
-    def parameters_to_vars(params)
-      params.map do |type,name|
-        if type != :block
-          name ||= :args
-        end
-      end.compact
+      end
+      (min..max)
     end
 
     class << self
-      def on(object, method_name, ignore_method_doesnt_exit = false)
-        if object.nil?
-          raise ArgumentError.new("#{object.inspect} must not be nil")
-        end
-
-        fetch(object).watch_method(method_name, ignore_method_doesnt_exit)
-      end
-
-      def fetch(object)
-        object_spy = object.instance_variable_get(:@__spy)
-        unless object_spy
-          object_spy = new(object)
-          spies << object_spy
-          object.instance_variable_set(:@__spy, object_spy)
-        end
-        object_spy
+      def on(base_object, method_name)
+        spy = new(base_object, method_name.to_sym).tap(&:hook)
+        spies << spy
+        spy
       end
 
       def spies
         @spies ||= []
-      end
-
-      def teardown
-        spies.each(&:teardown)
       end
     end
   end
