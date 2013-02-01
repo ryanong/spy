@@ -11,13 +11,11 @@ module Insult
     def hook
       raise "#{method_name} has already been hooked" if base_object.singleton_methods.include?(method_name)
       @original_method = base_object.method(method_name)
+      @arity_range = get_arity_range(@original_method.parameters)
 
-      __insult_arity_range = get_arity_range(@original_method.parameters)
       __insult_spy = self
-
       @base_object.define_singleton_method(method_name) do |*args, &block|
-        __insult_spy.check_arity!(__insult_arity_range, args.size)
-        __insult_spy.called_with(self,args, &block)
+        __insult_spy.called_with(self,args,block)
       end
       self
     end
@@ -25,6 +23,7 @@ module Insult
     def unhook
       raise "#{method_name} has not been hooked" unless base_object.singleton_methods.include?(method_name)
       @original_method = nil
+      @arity_range = nil
       @base_object.singleton_class.undef_method method_name
       self
     end
@@ -33,25 +32,29 @@ module Insult
       @calls.size > 0
     end
 
-    def called_with(object, args, &block)
+    def called_with(object, args, block)
+      check_arity!(args.size)
       @calls << CallLog.new(object, args, block)
       nil
     end
 
     def reset!
       @calls = []
+      @original_method = nil
+      @arity_range = nil
       true
     end
 
-    def check_arity!(arity_range, arity)
-      if arity < arity_range.min
-        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.min})")
-      elsif arity > arity_range.max
-        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
+    private
+
+    def check_arity!(arity)
+      return unless @arity_range
+      if arity < @arity_range.min
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{@arity_range.min})")
+      elsif arity > @arity_range.max
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{@arity_range.max})")
       end
     end
-
-    private
 
     def get_arity_range(parameters)
       min = 0
