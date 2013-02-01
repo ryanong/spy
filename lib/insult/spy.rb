@@ -2,7 +2,7 @@ module Insult
   class Spy
     CallLog = Struct.new(:object, :args, :block)
 
-    attr_reader :base_object, :method_name
+    attr_reader :base_object, :method_name, :calls
     def initialize(object, method_name)
       @base_object, @method_name = object, method_name
       reset!
@@ -19,12 +19,14 @@ module Insult
         __insult_spy.check_arity!(__insult_arity_range, args.size)
         __insult_spy.called_with(self,args, &block)
       end
+      self
     end
 
     def unhook
       raise "#{method_name} has not been hooked" unless base_object.singleton_methods.include?(method_name)
       @original_method = nil
       @base_object.singleton_class.undef_method method_name
+      self
     end
 
     def was_called?
@@ -38,6 +40,7 @@ module Insult
 
     def reset!
       @calls = []
+      true
     end
 
     def check_arity!(arity_range, arity)
@@ -69,13 +72,29 @@ module Insult
 
     class << self
       def on(base_object, method_name)
-        spy = new(base_object, method_name.to_sym).tap(&:hook)
+        spy = new(base_object, method_name.to_sym).hook
         spies << spy
         spy
       end
 
+      def off(base_object, method_name)
+        spy = spies.find { |s| s.original_method == base_object } 
+        if spy
+          spy.unook
+        end
+      end
+
       def spies
         @spies ||= []
+      end
+
+      def teardown
+        spies.each(&:unhook)
+        reset
+      end
+
+      def reset
+        @spies = nil
       end
     end
   end
