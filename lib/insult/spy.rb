@@ -10,13 +10,13 @@ module Insult
       raise "#{method_name} has already been hooked" if base_object.singleton_methods.include?(method_name)
       @original_method = base_object.method(method_name)
 
-      arity_range = get_arity_range(@original_method.parameters)
-      spy = self
+      __insult_arity_range = get_arity_range(@original_method.parameters)
+      __insult_spy = self
 
-      @base_object.define_singleton_method(method_name, lambda do |*args, &block|
-        spy.check_arity!(arity_range, args.size)
-        spy.called_with(self,args, &block)
-      end)
+      @base_object.define_singleton_method(method_name) do |*args, &block|
+        __insult_spy.check_arity!(__insult_arity_range, args.size)
+        __insult_spy.called_with(self,args, &block)
+      end
     end
 
     def unhook
