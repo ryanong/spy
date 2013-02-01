@@ -28,6 +28,16 @@ module Insult
       self
     end
 
+    def and_return(value = nil, &block)
+      if value
+        raise ArgumentError.new("value and block conflict. Choose one") if block
+        @plan = Proc.new { value }
+      elsif block
+        @plan = block
+      end
+      self
+    end
+
     def was_called?
       @calls.size > 0
     end
@@ -35,7 +45,7 @@ module Insult
     def called_with(object, args, block)
       check_arity!(args.size)
       @calls << CallLog.new(object, args, block)
-      nil
+      @plan.call(*args, &block) if @plan
     end
 
     def reset!

@@ -59,6 +59,24 @@ module Insult
       end
     end
 
+    def test_spy_and_return_returns_the_set_value
+      result = "hello world"
+
+      Spy.on(@pen, :write).and_return(result)
+
+      assert_equal result, @pen.write(nil)
+    end
+
+    def test_spy_and_return_can_call_a_block
+      result = "hello world"
+
+      Spy.on(@pen, :write).and_return do |string| 
+        string.reverse
+      end
+
+      assert_equal result.reverse, @pen.write(result)
+    end
+
     def test_spy_hook_records_number_of_calls
       pen_write_spy = Spy.on(@pen, :write)
       assert_equal 0, pen_write_spy.calls.size
