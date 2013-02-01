@@ -34,14 +34,9 @@ class Person
 end
 
 person = Person.new
-person_spy = Spy(person)
-first_name_spy = person_spy.on(:first_name).and_callthrough
-person.full_name
-person_spy.must have_received(:first_name).with()
-first_name_spy.must have_been_called
-
-
-
+first_name_spy = Insult::Spy.on(person, :first_name)
+person.first_name
+first_name_spy.was_called? #=> true
 ```
 
 ## Contributing
