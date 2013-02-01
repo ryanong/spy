@@ -83,7 +83,7 @@ module Insult
     def test_spy_and_return_can_call_a_block
       result = "hello world"
 
-      Spy.on(@pen, :write).and_return do |string| 
+      Spy.on(@pen, :write).and_return do |string|
         string.reverse
       end
 
@@ -94,14 +94,14 @@ module Insult
     def test_spy_and_return_can_call_a_block_that_recieves_a_block
       string = "hello world"
 
-      Spy.on(@pen, :write_block).and_return do |&block| 
+      Spy.on(@pen, :write_block).and_return do |&block|
         block.call
       end
 
       result = @pen.write_block do
         string
       end
-      assert_equal string, result 
+      assert_equal string, result
     end
 
     def test_spy_hook_records_number_of_calls

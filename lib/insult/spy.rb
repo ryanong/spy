@@ -43,17 +43,17 @@ module Insult
       @calls.size > 0
     end
 
+    def was_called_with?(*args)
+      @calls.any? do |call_log|
+        call_log.args == args
+      end
+    end
+
     def record(object, args, block)
       check_arity!(args.size)
       @calls << CallLog.new(object, args, block)
       if @plan
         @plan.call(*args, &block)
-      end
-    end
-
-    def was_called_with(*args)
-      @calls.any? do |call_log|
-        call_log.args == args
       end
     end
 
@@ -100,7 +100,7 @@ module Insult
       end
 
       def off(base_object, method_name)
-        spy = spies.find { |s| s.original_method == base_object } 
+        spy = spies.find { |s| s.original_method == base_object }
         if spy
           spy.unook
         end
