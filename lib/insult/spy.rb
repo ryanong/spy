@@ -1,5 +1,7 @@
 module Insult
   class Spy
+    CallLog = Struct.new(:object, :args, :block)
+
     attr_reader :base_object, :method_name
     def initialize(object, method_name)
       @base_object, @method_name = object, method_name
@@ -30,7 +32,7 @@ module Insult
     end
 
     def called_with(object, args, &block)
-      @calls << {object: object, args: args, block: block}
+      @calls << CallLog.new(object, args, block)
       nil
     end
 
