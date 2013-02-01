@@ -38,19 +38,19 @@ module Insult
     end
 
     def test_spy_can_hook_and_record_a_method_call
-      @pen_write_spy = Spy.new(@pen, :write)
-      @pen_write_spy.hook
-      refute @pen_write_spy.was_called?
+      pen_write_spy = Spy.new(@pen, :write)
+      pen_write_spy.hook
+      refute pen_write_spy.was_called?
       @pen.write("hello")
-      assert @pen_write_spy.was_called?
+      assert pen_write_spy.was_called?
     end
 
     def test_spy_can_unhook_a_method
-      @pen_write_spy = Spy.new(@pen, :write)
-      @pen_write_spy.hook
-      @pen_write_spy.unhook
+      pen_write_spy = Spy.new(@pen, :write)
+      pen_write_spy.hook
+      pen_write_spy.unhook
       @pen.write("hello")
-      refute @pen_write_spy.was_called?
+      refute pen_write_spy.was_called?
     end
 
     def test_spy_cannot_hook_a_non_existent_method
@@ -60,20 +60,20 @@ module Insult
     end
 
     def test_spy_hook_records_number_of_calls
-      @pen_write_spy = Spy.on(@pen, :write)
-      assert_equal 0, @pen_write_spy.calls.size
+      pen_write_spy = Spy.on(@pen, :write)
+      assert_equal 0, pen_write_spy.calls.size
       5.times do |i|
         @pen.write("hello world")
-        assert_equal i + 1, @pen_write_spy.calls.size
+        assert_equal i + 1, pen_write_spy.calls.size
       end
     end
 
     def test_spy_hook_records_number_of_calls
       args = ["hello world"]
       block = Proc.new {}
-      @pen_write_spy = Spy.on(@pen, :write)
+      pen_write_spy = Spy.on(@pen, :write)
       @pen.write(*args, &block)
-      call_log = @pen_write_spy.calls.first
+      call_log = pen_write_spy.calls.first
       assert_equal @pen, call_log.object
       assert_equal args, call_log.args
       assert_equal block, call_log.block
@@ -111,8 +111,8 @@ module Insult
 
     def test_spy_can_unhook_a_method
       Spy.off(@pen,:method)
-      @pen_write_spy = Spy.new(@pen, :write)
-      @pen_write_spy.hook
+      pen_write_spy = Spy.new(@pen, :write)
+      pen_write_spy.hook
       @pen.write("hello world")
     end
   end
