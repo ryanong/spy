@@ -8,7 +8,14 @@ module Insult
       def initialize
         @written = []
       end
+
       def write(string)
+        @written << string
+        string
+      end
+
+      def write_block(&block)
+        string = yield
         @written << string
         string
       end
@@ -81,6 +88,20 @@ module Insult
       end
 
       assert_equal result.reverse, @pen.write(result)
+      assert_empty @pen.written
+    end
+
+    def test_spy_and_return_can_call_a_block_that_recieves_a_block
+      string = "hello world"
+
+      Spy.on(@pen, :write_block).and_return do |&block| 
+        block.call
+      end
+
+      result = @pen.write_block do
+        string
+      end
+      assert_equal string, result 
     end
 
     def test_spy_hook_records_number_of_calls
@@ -102,7 +123,6 @@ module Insult
       assert_equal args, call_log.args
       assert_equal block, call_log.block
     end
-
 
     def test_that_method_spy_keeps_arity
       Spy.on(@pen, :write)
