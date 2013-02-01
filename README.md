@@ -1,6 +1,12 @@
 # Insult
 
-TODO: Write a gem description
+Insult is a lightweight mocking framework that won't let your code insult your intelligent.
+
+Features:
+
+* Raise error when you try to stub/spy a method that doesn't exist
+* Raise an error when you try to use the wrong number of parameters
+* Simple call log api
 
 ## Installation
 

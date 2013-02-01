@@ -24,7 +24,7 @@ module Insult
       raise "#{method_name} has not been hooked" unless base_object.singleton_methods.include?(method_name)
       @original_method = nil
       @arity_range = nil
-      @base_object.singleton_class.undef_method method_name
+      @base_object.singleton_class.send(:remove_method, method_name)
       self
     end
 
@@ -100,10 +100,14 @@ module Insult
       end
 
       def off(base_object, method_name)
-        spy = spies.find { |s| s.original_method == base_object }
-        if spy
-          spy.unook
+        removed_spies = []
+        spies.delete_if do |spy|
+          if spy.base_object == base_object && spy.method_name == method_name
+            spy.unhook
+            removed_spies << spy
+          end
         end
+        removed_spies
       end
 
       def spies
