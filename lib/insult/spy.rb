@@ -15,7 +15,7 @@ module Insult
 
       __insult_spy = self
       @base_object.define_singleton_method(method_name) do |*args, &block|
-        __insult_spy.called_with(self,args,block)
+        __insult_spy.record(self,args,block)
       end
       self
     end
@@ -43,7 +43,7 @@ module Insult
       @calls.size > 0
     end
 
-    def called_with(object, args, block)
+    def record(object, args, block)
       check_arity!(args.size)
       @calls << CallLog.new(object, args, block)
       if @plan
