@@ -51,6 +51,12 @@ module Insult
       end
     end
 
+    def was_called_with(*args)
+      @calls.any? do |call_log|
+        call_log.args == args
+      end
+    end
+
     def reset!
       @calls = []
       @original_method = nil

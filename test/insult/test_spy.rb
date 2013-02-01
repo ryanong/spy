@@ -113,6 +113,17 @@ module Insult
       end
     end
 
+    def test_was_called_with?
+      pen_write_spy = Spy.on(@pen, :write)
+      refute pen_write_spy.was_called_with("hello")
+      @pen.write("hello")
+      assert pen_write_spy.was_called_with("hello")
+      @pen.write("world")
+      assert pen_write_spy.was_called_with("hello")
+      @pen.write("hello world")
+      assert pen_write_spy.was_called_with("hello")
+    end
+
     def test_spy_hook_records_number_of_calls
       args = ["hello world"]
       block = Proc.new {}
