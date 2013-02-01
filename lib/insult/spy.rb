@@ -22,8 +22,7 @@ module Insult
 
     def unhook
       raise "#{method_name} has not been hooked" unless base_object.singleton_methods.include?(method_name)
-      @original_method = nil
-      @arity_range = nil
+      @original_method = @arity_range = nil
       @base_object.singleton_class.send(:remove_method, method_name)
       self
     end
@@ -52,15 +51,12 @@ module Insult
     def record(object, args, block)
       check_arity!(args.size)
       @calls << CallLog.new(object, args, block)
-      if @plan
-        @plan.call(*args, &block)
-      end
+      @plan.call(*args, &block) if @plan
     end
 
     def reset!
       @calls = []
-      @original_method = nil
-      @arity_range = nil
+      @original_method = @arity_range = nil
       true
     end
 
@@ -76,8 +72,7 @@ module Insult
     end
 
     def get_arity_range(parameters)
-      min = 0
-      max = 0
+      min = max = 0
       parameters.each do |type,_|
         case type
         when :req
