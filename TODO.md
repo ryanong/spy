@@ -1,7 +1,5 @@
 # Todo
 
-* ignore if method doesn't exist
-* ignore method visibility
 * doubles
 * ignore if method doesn't exist if it is a double
 * consecutive return values
