@@ -67,9 +67,16 @@ module Insult
     end
 
     def test_spy_cannot_hook_a_non_existent_method
+      spy = Spy.new(@pen, :no_method)
       assert_raises NameError do
-        Spy.on(@pen, :no_method)
+        spy.hook
       end
+    end
+
+    def test_spy_can_hook_a_non_existent_method_if_param_set
+      spy = Spy.new(@pen, :no_method).and_return(:yep)
+      spy.hook(force: true)
+      assert_equal :yep, @pen.no_method
     end
 
     def test_spy_and_return_returns_the_set_value

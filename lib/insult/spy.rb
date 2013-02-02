@@ -8,10 +8,12 @@ module Insult
       reset!
     end
 
-    def hook
+    def hook(opts = {})
       raise "#{method_name} has already been hooked" if base_object.singleton_methods.include?(method_name)
-      @original_method = base_object.method(method_name)
-      @arity_range = get_arity_range(@original_method.parameters)
+      unless opts[:force]
+        @original_method = base_object.method(method_name)
+        @arity_range = get_arity_range(@original_method.parameters)
+      end
 
       __insult_spy = self
       @base_object.define_singleton_method(method_name) do |*args, &block|
@@ -27,15 +29,14 @@ module Insult
       self
     end
 
-    def and_return(value = nil)
-      if value
-        raise ArgumentError.new("value and block conflict. Choose one") if block_given?
-        @plan = Proc.new { value }
-      elsif block_given?
-        @plan = Proc.new
+    def and_return(value = nil, &block)
+      if block_given?
+        raise ArgumentError.new("value and block conflict. Choose one") if !value.nil?
+        @plan = block
       else
-        self
+        @plan = Proc.new { value }
       end
+      self
     end
 
     def called?
