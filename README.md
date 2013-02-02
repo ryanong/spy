@@ -1,12 +1,23 @@
 # Insult
 
-Insult is a lightweight mocking framework that won't let your code insult your intelligent.
+Insult is a lightweight doubles framework that won't let your code mock your intelligence.
 
-Features:
+Inspired by the spy api of the jasmine javascript testing framework.
+
+## Why use this instead of rspec-mocks, mocha, or etc
 
 * Raise error when you try to stub/spy a method that doesn't exist
-* Raise an error when you try to use the wrong number of parameters
+  * when you change your method name your unit tests will break
+* Spy arity matches original method
+  * Your tests will raise an error if you use the wrong arity
+* Spy visibility matches original method
+  * Your tests will raise an error if you try to call the method incorrectly
 * Simple call log api
+  * easier to read tests
+  * less need to look at test framework documentation
+* no expectations
+  * really who thought that was a good idea?
+* absolutely no polution of global object space unless you want to
 
 ## Installation
 
@@ -42,14 +53,26 @@ class Person
     puts words
   end
 end
+```
 
+### Standalone
+
+```ruby
 person = Person.new
+
 first_name_spy = Insult::Spy.on(person, :first_name)
 person.first_name          #=> nil
-first_name_spy.called? #=> true
+first_name_spy.called?     #=> true
 
+Insult::Spy.off(person, :first_name)
+person.first_name          #=> "John"
+
+first_name_spy.hook        #=> first_name_spy
 first_name_spy.and_return("Bob")
 person.first_name          #=> "Bob"
+
+Insult::Spy.teardown
+person.first_name #=> "John"
 
 say_spy = Insult::Spy.on(person, :say)
 person.say("hello") {
