@@ -96,16 +96,19 @@ call_log.block.call #=> "everything accepts a block in ruby"
 
 ```ruby
 require "insult"
-MiniTest::Spy = Insult::Spy
+MiniTest::TestCase.send(:include, Insult::Dsl)
 MiniTest::TestCase.add_teardown_hook { Insult::Spy.teardown }
 ```
 
 ### Rspec
 
+In spec\_helper.rb
+
 ```ruby
+require "rspec/autorun"
 require "insult"
-RSpec::Core::Spy = Insult::Spy
 RSpec.configure do |c|
+  c.include Insult::Dsl
   c.before { Insult::Spy.teardown  }
 end
 ```
@@ -114,8 +117,8 @@ end
 
 ```ruby
 require "insult"
-Test::Unit::Spy = Insult::spy
 class Test::Unit::TestCase
+  include Insult::Dsl
   def setup
     Insult::Spy.teardown
   end

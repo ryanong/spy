@@ -90,13 +90,13 @@ module Insult
     class << self
       def on(base_object, method_name)
         spy = new(base_object, method_name.to_sym).hook
-        spies << spy
+        all << spy
         spy
       end
 
       def off(base_object, method_name)
         removed_spies = []
-        spies.delete_if do |spy|
+        all.delete_if do |spy|
           if spy.base_object == base_object && spy.method_name == method_name
             spy.unhook
             removed_spies << spy
@@ -105,17 +105,17 @@ module Insult
         removed_spies
       end
 
-      def spies
-        @spies ||= []
+      def all
+        @all ||= []
       end
 
       def teardown
-        spies.each(&:unhook)
+        all.each(&:unhook)
         reset
       end
 
       def reset
-        @spies = nil
+        @all = nil
       end
     end
   end

@@ -46,7 +46,7 @@ module Insult
     def test_spy_on_hook_and_saves_spy
       pen_write_spy = Spy.on(@pen, :write)
       assert_kind_of Spy, pen_write_spy
-      assert_equal Spy.spies, [pen_write_spy]
+      assert_equal Spy.all, [pen_write_spy]
     end
 
     def test_spy_can_hook_and_record_a_method_call
