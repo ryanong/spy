@@ -1,6 +1,6 @@
-# Insult
+# Spies
 
-Insult is a lightweight doubles framework that won't let your code mock your intelligence.
+Spies is a lightweight doubles framework that won't let your code mock your intelligence.
 
 Inspired by the spy api of the jasmine javascript testing framework.
 
@@ -23,7 +23,7 @@ Inspired by the spy api of the jasmine javascript testing framework.
 
 Add this line to your application's Gemfile:
 
-    gem 'insult'
+    gem 'spies'
 
 And then execute:
 
@@ -31,7 +31,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install insult
+    $ gem install spies
 
 ## Usage
 
@@ -60,21 +60,21 @@ end
 ```ruby
 person = Person.new
 
-first_name_spy = Insult::Spy.on(person, :first_name)
+first_name_spy = Spies::Spy.on(person, :first_name)
 person.first_name          #=> nil
 first_name_spy.called?     #=> true
 
-Insult::Spy.off(person, :first_name)
+Spies::Spy.off(person, :first_name)
 person.first_name          #=> "John"
 
 first_name_spy.hook        #=> first_name_spy
 first_name_spy.and_return("Bob")
 person.first_name          #=> "Bob"
 
-Insult::Spy.teardown
+Spies::Spy.teardown
 person.first_name #=> "John"
 
-say_spy = Insult::Spy.on(person, :say)
+say_spy = Spies::Spy.on(person, :say)
 person.say("hello") {
   "everything accepts a block in ruby"
 }
@@ -95,9 +95,9 @@ call_log.block.call #=> "everything accepts a block in ruby"
 ### MiniTest
 
 ```ruby
-require "insult"
-MiniTest::TestCase.send(:include, Insult::Dsl)
-MiniTest::TestCase.add_teardown_hook { Insult::Spy.teardown }
+require "spies"
+MiniTest::TestCase.send(:include, Spies::Dsl)
+MiniTest::TestCase.add_teardown_hook { Spies::Spy.teardown }
 ```
 
 ### Rspec
@@ -106,21 +106,21 @@ In spec\_helper.rb
 
 ```ruby
 require "rspec/autorun"
-require "insult"
+require "spies"
 RSpec.configure do |c|
-  c.include Insult::Dsl
-  c.before { Insult::Spy.teardown  }
+  c.include Spies::Dsl
+  c.before { Spies::Spy.teardown  }
 end
 ```
 
 ### Test::Unit
 
 ```ruby
-require "insult"
+require "spies"
 class Test::Unit::TestCase
-  include Insult::Dsl
+  include Spies::Dsl
   def setup
-    Insult::Spy.teardown
+    Spies::Spy.teardown
   end
 end
 ```

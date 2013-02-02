@@ -1,4 +1,4 @@
-module Insult
+module Spies
   class Spy
     CallLog = Struct.new(:object, :args, :block)
 
@@ -17,9 +17,9 @@ module Insult
         @arity_range = get_arity_range(@original_method.parameters)
       end
 
-      __insult_spy = self
+      __spies_spy = self
       @base_object.define_singleton_method(method_name) do |*args, &block|
-        __insult_spy.record(self,args,block)
+        __spies_spy.record(self,args,block)
       end
 
       opts[:visibility] ||= method_visibility

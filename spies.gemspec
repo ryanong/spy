@@ -1,14 +1,14 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'insult/version'
+require 'spies/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "insult"
-  gem.version       = Insult::VERSION
+  gem.name          = "spies"
+  gem.version       = Spies::VERSION
   gem.authors       = ["Ryan Ong"]
   gem.email         = ["ryanong@gmail.com"]
-  gem.description   = %q{A simple mocking library that doesn't insult your intelligence.}
+  gem.description   = %q{A simple mocking library that doesn't spies your intelligence.}
   gem.summary       = %q{A simple non destructive mocking library.}
   gem.homepage      = ""
 

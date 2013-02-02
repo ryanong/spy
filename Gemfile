@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in insult.gemspec
+# Specify your gem's dependencies in spies.gemspec
 gemspec
 gem 'pry'

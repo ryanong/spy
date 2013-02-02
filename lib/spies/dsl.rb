@@ -1,7 +1,7 @@
-module Insult
+module Spies
   module Dsl
     def spy
-      ::Insult::Spy
+      ::Spies::Spy
     end
   end
 end

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-module Insult
+module Spies
   class TestSpy < MiniTest::Unit::TestCase
     class Pen
       attr_reader :written
