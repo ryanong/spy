@@ -11,9 +11,8 @@ module Insult
     def hook(opts = {})
       opts[:force] ||= false
       raise "#{method_name} has already been hooked" if base_object.singleton_methods.include?(method_name)
-      visibility = method_visibility
-      opts[:visibility] ||= visibility
-      if visibility || !opts[:force]
+
+      if method_visibility || !opts[:force]
         @original_method = base_object.method(method_name)
         @arity_range = get_arity_range(@original_method.parameters)
       end
@@ -22,12 +21,15 @@ module Insult
       @base_object.define_singleton_method(method_name) do |*args, &block|
         __insult_spy.record(self,args,block)
       end
+
+      opts[:visibility] ||= method_visibility
       @base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
       self
     end
 
     def unhook
       raise "#{method_name} has not been hooked" unless base_object.singleton_methods.include?(method_name)
+      clear_method!
       @original_method = @arity_range = nil
       @base_object.singleton_class.send(:remove_method, method_name)
       self
@@ -61,22 +63,27 @@ module Insult
 
     def reset!
       @calls = []
-      @original_method = @arity_range = nil
+      clear_method!
       true
     end
 
     private
 
+    def clear_method!
+      @original_method = @arity_range = @method_visiblity = nil
+    end
+
     def method_visibility
-      if base_object.class.public_method_defined? method_name
-        :public
-      elsif base_object.class.protected_method_defined? method_name
-        :protected
-      elsif base_object.class.private_method_defined? method_name
-        :private
-      else
-        nil
-      end
+      @method_visibility ||=
+        if base_object.class.public_method_defined? method_name
+          :public
+        elsif base_object.class.protected_method_defined? method_name
+          :protected
+        elsif base_object.class.private_method_defined? method_name
+          :private
+        else
+          nil
+        end
     end
 
     def check_arity!(arity)
