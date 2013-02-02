@@ -9,3 +9,4 @@
 * argument matchers
 * count matchers
 * watch all calls to an object
+* spy on CONSTANTS

@@ -9,12 +9,14 @@ module Spies
     end
 
     def hook(opts = {})
+      raise "#{method_name} method has already been hooked" if hooked?
       opts[:force] ||= false
-      raise "#{method_name} has already been hooked" if base_object.singleton_methods.include?(method_name)
-
       if method_visibility || !opts[:force]
         @original_method = base_object.method(method_name)
         @arity_range = get_arity_range(@original_method.parameters)
+        if base_object.singleton_methods.include?(method_name)
+          @base_object.singleton_class.send(:remove_method, method_name)
+        end
       end
 
       __spies_spy = self
@@ -24,15 +26,20 @@ module Spies
 
       opts[:visibility] ||= method_visibility
       @base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
+      @hooked = true
       self
     end
 
     def unhook
-      raise "#{method_name} has not been hooked" unless base_object.singleton_methods.include?(method_name)
-      clear_method!
-      @original_method = @arity_range = nil
+      raise "#{method_name} method has not been hooked" unless hooked?
       @base_object.singleton_class.send(:remove_method, method_name)
+      @base_object.define_singleton_method(method_name, @original_method)
+      clear_method!
       self
+    end
+
+    def hooked?
+      @hooked
     end
 
     def and_return(value = nil, &block)
@@ -70,6 +77,7 @@ module Spies
     private
 
     def clear_method!
+      @hooked = false
       @original_method = @arity_range = @method_visiblity = nil
     end
 

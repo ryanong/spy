@@ -3,9 +3,10 @@ require 'test_helper'
 module Spies
   class TestSpy < MiniTest::Unit::TestCase
     class Pen
-      attr_reader :written
+      attr_reader :written, :color
 
-      def initialize
+      def initialize(color = :black)
+        @color = color
         @written = []
       end
 
@@ -44,6 +45,12 @@ module Spies
       private
       def private_method
       end
+
+      class << self
+        def another
+          "another"
+        end
+      end
     end
 
     def setup
@@ -67,6 +74,16 @@ module Spies
       @pen.write("hello")
       assert pen_write_spy.called?
       assert_empty @pen.written
+    end
+
+    def test_spy_can_hook_and_record_a_method_call_on_a_constant
+      another_spy = Spy.new(Pen, :another)
+      another_spy.hook
+      refute another_spy.called?
+      assert_nil Pen.another
+      assert another_spy.called?
+      another_spy.unhook
+      assert_equal "another", Pen.another
     end
 
     def test_spy_can_unhook_a_method
