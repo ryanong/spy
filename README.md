@@ -34,15 +34,39 @@ class Person
     "Smith"
   end
 
-  def full_na)me
+  def full_name
     "#{first_name} #{last_name}"
+  end
+
+  def say(words)
+    puts words
   end
 end
 
 person = Person.new
 first_name_spy = Insult::Spy.on(person, :first_name)
-person.first_name
-first_name_spy.was_called? #=> true
+person.first_name          #=> nil
+first_name_spy.called? #=> true
+
+first_name_spy.and_return("Bob")
+person.first_name          #=> "Bob"
+
+say_spy = Insult::Spy.on(person, :say)
+person.say("hello") {
+  "everything accepts a block in ruby"
+}
+say_spy.say("world")
+
+say_spy.called_with?("hello") #=> true
+say_spy.calls.count               #=> 1
+say_spy.calls.first.args          #=> ["hello"]
+say_spy.calls.last.args           #=> ["world"]
+
+call_log = say_spy.calls.first
+call_log.object     #=> #<Person:0x00000000b2b858>
+call_log.args       #=> ["hello"]
+call_log.block      #=> #<Proc:0x00000000b1a9e0>
+call_log.block.call #=> "everything accepts a block in ruby"
 ```
 
 ## Contributing

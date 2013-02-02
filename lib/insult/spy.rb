@@ -38,11 +38,11 @@ module Insult
       end
     end
 
-    def was_called?
+    def called?
       @calls.size > 0
     end
 
-    def was_called_with?(*args)
+    def called_with?(*args)
       @calls.any? do |call_log|
         call_log.args == args
       end

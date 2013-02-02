@@ -52,9 +52,9 @@ module Insult
     def test_spy_can_hook_and_record_a_method_call
       pen_write_spy = Spy.new(@pen, :write)
       pen_write_spy.hook
-      refute pen_write_spy.was_called?
+      refute pen_write_spy.called?
       @pen.write("hello")
-      assert pen_write_spy.was_called?
+      assert pen_write_spy.called?
       assert_empty @pen.written
     end
 
@@ -63,7 +63,7 @@ module Insult
       pen_write_spy.hook
       pen_write_spy.unhook
       @pen.write("hello")
-      refute pen_write_spy.was_called?
+      refute pen_write_spy.called?
     end
 
     def test_spy_cannot_hook_a_non_existent_method
@@ -113,15 +113,15 @@ module Insult
       end
     end
 
-    def test_was_called_with?
+    def test_called_with?
       pen_write_spy = Spy.on(@pen, :write)
-      refute pen_write_spy.was_called_with?("hello")
+      refute pen_write_spy.called_with?("hello")
       @pen.write("hello")
-      assert pen_write_spy.was_called_with?("hello")
+      assert pen_write_spy.called_with?("hello")
       @pen.write("world")
-      assert pen_write_spy.was_called_with?("hello")
+      assert pen_write_spy.called_with?("hello")
       @pen.write("hello world")
-      assert pen_write_spy.was_called_with?("hello")
+      assert pen_write_spy.called_with?("hello")
     end
 
     def test_spy_hook_records_number_of_calls
@@ -168,7 +168,7 @@ module Insult
       pen_write_spy = Spy.on(@pen, :write)
       Spy.off(@pen,:write)
       assert_equal "hello world", @pen.write("hello world")
-      refute pen_write_spy.was_called?
+      refute pen_write_spy.called?
     end
   end
 end
