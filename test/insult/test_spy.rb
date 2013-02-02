@@ -33,6 +33,17 @@ module Insult
       def greet(hello = "hello", name)
         write("#{hello} #{name}")
       end
+
+      def public_method
+      end
+
+      protected
+      def protected_method
+      end
+
+      private
+      def private_method
+      end
     end
 
     def setup
@@ -169,6 +180,23 @@ module Insult
       assert_raises ArgumentError do
         @pen.greet("hello", "bob", "error")
       end
+    end
+
+    def test_hook_mimics_method_visibility
+      Spy.on(@pen, :public_method)
+      assert @pen.singleton_class.public_method_defined? :public_method
+      refute @pen.singleton_class.protected_method_defined? :public_method
+      refute @pen.singleton_class.private_method_defined? :public_method
+
+      Spy.on(@pen, :protected_method)
+      refute @pen.singleton_class.public_method_defined? :protected_method
+      assert @pen.singleton_class.protected_method_defined? :protected_method
+      refute @pen.singleton_class.private_method_defined? :protected_method
+
+      Spy.on(@pen, :private_method)
+      refute @pen.singleton_class.public_method_defined? :private_method
+      refute @pen.singleton_class.protected_method_defined? :private_method
+      assert @pen.singleton_class.private_method_defined? :private_method
     end
 
     def test_spy_can_unhook_a_method

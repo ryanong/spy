@@ -1,6 +1,5 @@
 # Todo
 
-* mimic method visibility
 * ignore if method doesn't exist
 * ignore method visibility
 * doubles

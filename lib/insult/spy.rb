@@ -9,8 +9,11 @@ module Insult
     end
 
     def hook(opts = {})
+      opts[:force] ||= false
       raise "#{method_name} has already been hooked" if base_object.singleton_methods.include?(method_name)
-      unless opts[:force]
+      visibility = method_visibility
+      opts[:visibility] ||= visibility
+      if visibility || !opts[:force]
         @original_method = base_object.method(method_name)
         @arity_range = get_arity_range(@original_method.parameters)
       end
@@ -19,6 +22,7 @@ module Insult
       @base_object.define_singleton_method(method_name) do |*args, &block|
         __insult_spy.record(self,args,block)
       end
+      @base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
       self
     end
 
@@ -62,6 +66,18 @@ module Insult
     end
 
     private
+
+    def method_visibility
+      if base_object.class.public_method_defined? method_name
+        :public
+      elsif base_object.class.protected_method_defined? method_name
+        :protected
+      elsif base_object.class.private_method_defined? method_name
+        :private
+      else
+        nil
+      end
+    end
 
     def check_arity!(arity)
       return unless @arity_range
