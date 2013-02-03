@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'spies/version'
+require 'spy/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "spies"
-  gem.version       = Spies::VERSION
+  gem.name          = "spy"
+  gem.version       = Spy::VERSION
   gem.authors       = ["Ryan Ong"]
   gem.email         = ["ryanong@gmail.com"]
   gem.description   = %q{A simple mocking library that doesn't spies your intelligence.}

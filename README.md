@@ -1,6 +1,6 @@
-# Spies
+# Spy
 
-Spies is a lightweight doubles framework that won't let your code mock your intelligence.
+Spy is a lightweight doubles framework that won't let your code mock your intelligence.
 
 Inspired by the spy api of the jasmine javascript testing framework.
 
@@ -23,7 +23,7 @@ Inspired by the spy api of the jasmine javascript testing framework.
 
 Add this line to your application's Gemfile:
 
-    gem 'spies'
+    gem 'spy'
 
 And then execute:
 
@@ -31,7 +31,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install spies
+    $ gem install spy
 
 ## Usage
 
@@ -60,21 +60,21 @@ end
 ```ruby
 person = Person.new
 
-first_name_spy = Spies::Spy.on(person, :first_name)
+first_name_spy = Spy.on(person, :first_name)
 person.first_name          #=> nil
 first_name_spy.called?     #=> true
 
-Spies::Spy.off(person, :first_name)
+Spy.off(person, :first_name)
 person.first_name          #=> "John"
 
 first_name_spy.hook        #=> first_name_spy
 first_name_spy.and_return("Bob")
 person.first_name          #=> "Bob"
 
-Spies::Spy.teardown
+Spy.teardown
 person.first_name #=> "John"
 
-say_spy = Spies::Spy.on(person, :say)
+say_spy = Spy.on(person, :say)
 person.say("hello") {
   "everything accepts a block in ruby"
 }
@@ -95,9 +95,8 @@ call_log.block.call #=> "everything accepts a block in ruby"
 ### MiniTest
 
 ```ruby
-require "spies"
-MiniTest::TestCase.send(:include, Spies::Dsl)
-MiniTest::TestCase.add_teardown_hook { Spies::Spy.teardown }
+require "spy"
+MiniTest::TestCase.add_teardown_hook { Spy.teardown }
 ```
 
 ### Rspec
@@ -106,21 +105,19 @@ In spec\_helper.rb
 
 ```ruby
 require "rspec/autorun"
-require "spies"
+require "spy"
 RSpec.configure do |c|
-  c.include Spies::Dsl
-  c.before { Spies::Spy.teardown  }
+  c.before { Spy.teardown  }
 end
 ```
 
 ### Test::Unit
 
 ```ruby
-require "spies"
+require "spy"
 class Test::Unit::TestCase
-  include Spies::Dsl
   def setup
-    Spies::Spy.teardown
+    Spy.teardown
   end
 end
 ```
