@@ -34,6 +34,7 @@ module Spies
       raise "#{method_name} method has not been hooked" unless hooked?
       @base_object.singleton_class.send(:remove_method, method_name)
       @base_object.define_singleton_method(method_name, @original_method) if @original_method
+      @base_object.singleton_class.send(method_visibility, method_name) if method_visiblity
       clear_method!
       self
     end
