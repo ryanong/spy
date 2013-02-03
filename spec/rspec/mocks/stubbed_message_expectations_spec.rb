@@ -22,7 +22,7 @@ describe "expection set on previously stubbed method" do
   context "with argument constraint on stub" do
     it "matches any args if no arg constraint set on expectation" do
       double = double("mock")
-      double.stub(:foo).with(3).and_return("stub")
+      Spy.on(double, :foo).with(3).and_return("stub")
       double.should_receive(:foo).at_least(:once).and_return("expectation")
       double.foo
       double.rspec_verify
@@ -30,7 +30,7 @@ describe "expection set on previously stubbed method" do
 
     it "matches specific args set on expectation" do
       double = double("mock")
-      double.stub(:foo).with(3).and_return("stub")
+      Spy.on(double, :foo).with(3).and_return("stub")
       double.should_receive(:foo).at_least(:once).with(4).and_return("expectation")
       double.foo(4)
       double.rspec_verify
@@ -38,7 +38,7 @@ describe "expection set on previously stubbed method" do
 
     it "fails if expectation's arg constraint is not met" do
       double = double("mock")
-      double.stub(:foo).with(3).and_return("stub")
+      Spy.on(double, :foo).with(3).and_return("stub")
       double.should_receive(:foo).at_least(:once).with(4).and_return("expectation")
       double.foo(3)
       expect { double.rspec_verify }.to raise_error(/expected: \(4\)\s+got: \(3\)/)

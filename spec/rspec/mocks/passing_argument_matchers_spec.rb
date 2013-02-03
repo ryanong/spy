@@ -5,7 +5,7 @@ module RSpec
     describe Methods do
       before(:each) do
         @double = double('double')
-        Kernel.stub(:warn)
+        KSpy.on(ernel, :warn)
       end
 
       after(:each) do

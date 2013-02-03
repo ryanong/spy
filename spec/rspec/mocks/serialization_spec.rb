@@ -49,7 +49,7 @@ module RSpec
       let(:serializable_object) { RSpec::Mocks::SerializableObject.new(7, "something") }
 
       def set_stub
-        serializable_object.stub(:bazz => 5)
+        Spy.on(serializable_object, :bazz => 5)
       end
 
       shared_examples_for 'normal YAML serialization' do

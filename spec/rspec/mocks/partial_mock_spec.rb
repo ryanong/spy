@@ -153,7 +153,7 @@ module RSpec
 
       it "does not raise an error when stubbing the object" do
         o = klass.new :foo
-        expect { o.stub(:bar) }.not_to raise_error(NoMethodError)
+        expect { Spy.on(o, :bar) }.not_to raise_error(NoMethodError)
       end
     end
 

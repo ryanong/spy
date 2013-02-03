@@ -13,12 +13,12 @@ describe "a double receiving to_ary" do
     end
 
     it "can be overridden with a stub" do
-      obj.stub(:to_ary) { :non_nil_value }
+      Spy.on(obj, :to_ary) { :non_nil_value }
       expect(obj.to_ary).to be(:non_nil_value)
     end
 
     it "responds when overriden" do
-      obj.stub(:to_ary) { :non_nil_value }
+      Spy.on(obj, :to_ary) { :non_nil_value }
       expect(obj).to respond_to(:to_ary)
     end
 

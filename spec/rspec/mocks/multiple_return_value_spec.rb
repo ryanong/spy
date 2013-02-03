@@ -73,7 +73,7 @@ module RSpec
       end
 
       context "when method is stubbed too" do
-        before { @double.stub(:do_something).and_return :stub_result }
+        before { Spy.on(@double, :do_something).and_return :stub_result }
 
         it "uses the last value for subsequent calls" do
           expect(@double.do_something).to equal(11)

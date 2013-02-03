@@ -25,7 +25,7 @@ module RSpec
       it "uses the message supplied with :message after a similar stub" do
         expect {
           m = RSpec::Mocks::Mock.new("a mock")
-          m.stub(:message)
+          Spy.on(m, :message)
           m.should_receive(:message, :message => "from mock")
           m.rspec_verify
         }.to raise_error("from mock")

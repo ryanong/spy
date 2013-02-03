@@ -9,14 +9,14 @@ describe RSpec::Mocks::Mock do
 
       it "evaluates the supplied block as it is read" do
         evaluated = false
-        obj.stub(:method_that_accepts_a_block).and_yield do |eval_context|
+        Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
           evaluated = true
         end
         expect(evaluated).to be_true
       end
 
       it "passes an eval context object to the supplied block" do
-        obj.stub(:method_that_accepts_a_block).and_yield do |eval_context|
+        Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
           expect(eval_context).not_to be_nil
         end
       end
@@ -25,7 +25,7 @@ describe RSpec::Mocks::Mock do
         expected_eval_context = nil
         actual_eval_context = nil
 
-        obj.stub(:method_that_accepts_a_block).and_yield do |eval_context|
+        Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
           expected_eval_context = eval_context
         end
 
@@ -40,7 +40,7 @@ describe RSpec::Mocks::Mock do
 
         it "passes when expectations set on the eval context are met" do
           configured_eval_context = nil
-          obj.stub(:method_that_accepts_a_block).and_yield do |eval_context|
+          Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
             configured_eval_context = eval_context
             configured_eval_context.should_receive(:foo)
           end
@@ -54,7 +54,7 @@ describe RSpec::Mocks::Mock do
 
         it "fails when expectations set on the eval context are not met" do
           configured_eval_context = nil
-          obj.stub(:method_that_accepts_a_block).and_yield do |eval_context|
+          Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
             configured_eval_context = eval_context
             configured_eval_context.should_receive(:foo)
           end
@@ -73,7 +73,7 @@ describe RSpec::Mocks::Mock do
         it "passes when expectations set on the eval context and yielded arguments are met" do
           configured_eval_context = nil
           yielded_arg = Object.new
-          obj.stub(:method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
+          Spy.on(obj, :method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
             configured_eval_context = eval_context
             configured_eval_context.should_receive(:foo)
             yielded_arg.should_receive(:bar)
@@ -91,7 +91,7 @@ describe RSpec::Mocks::Mock do
         it "fails when expectations set on the eval context and yielded arguments are not met" do
           configured_eval_context = nil
           yielded_arg = Object.new
-          obj.stub(:method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
+          Spy.on(obj, :method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
             configured_eval_context = eval_context
             configured_eval_context.should_receive(:foo)
             yielded_arg.should_receive(:bar)

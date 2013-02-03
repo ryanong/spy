@@ -26,7 +26,7 @@ module RSpec
       end
 
       it "reports line number of expectation of unreceived message after #should_receive after similar stub" do
-        @double.stub(:wont_happen)
+        Spy.on(@double, :wont_happen)
         expected_error_line = __LINE__; @double.should_receive(:wont_happen).with("x", 3)
         begin
           @double.rspec_verify
@@ -97,7 +97,7 @@ module RSpec
       end
 
       it "returns the previously stubbed value if no return value is set" do
-        @double.stub(:something).with("a","b","c").and_return(:stubbed_value)
+        Spy.on(@double, :something).with("a","b","c").and_return(:stubbed_value)
         @double.should_receive(:something).with("a","b","c")
         expect(@double.something("a","b","c")).to eq :stubbed_value
         @double.rspec_verify
@@ -129,7 +129,7 @@ module RSpec
       end
 
       it "raises exception if args don't match when method called even when the method is stubbed" do
-        @double.stub(:something)
+        Spy.on(@double, :something)
         @double.should_receive(:something).with("a","b","c")
         expect {
           @double.something("a","d","c")
@@ -199,12 +199,12 @@ module RSpec
         end
 
         it "passes proc to stub block without an argurment" do
-          eval("@double.stub(:foo) {|&block| expect(block.call).to eq(:bar)}")
+          eval("Spy.on(@double, :foo) {|&block| expect(block.call).to eq(:bar)}")
           @double.foo { :bar }
         end
 
         it "passes proc to stub block with an argument" do
-          eval("@double.stub(:foo) {|arg, &block| expect(block.call).to eq(:bar)}")
+          eval("Spy.on(@double, :foo) {|arg, &block| expect(block.call).to eq(:bar)}")
           @double.foo(:arg) { :bar }
         end
       end
@@ -300,7 +300,7 @@ module RSpec
       end
 
       it "returns value from block by default" do
-        @double.stub(:method_that_yields).and_yield
+        Spy.on(@double, :method_that_yields).and_yield
         value = @double.method_that_yields { :returned_obj }
         expect(value).to eq :returned_obj
         @double.rspec_verify
@@ -484,7 +484,7 @@ module RSpec
       end
 
       it "temporarily replaces a method stub on a double" do
-        @double.stub(:msg).and_return(:stub_value)
+        Spy.on(@double, :msg).and_return(:stub_value)
         @double.should_receive(:msg).with(:arg).and_return(:double_value)
         expect(@double.msg(:arg)).to equal(:double_value)
         expect(@double.msg).to equal(:stub_value)
@@ -493,7 +493,7 @@ module RSpec
       end
 
       it "does not require a different signature to replace a method stub" do
-        @double.stub(:msg).and_return(:stub_value)
+        Spy.on(@double, :msg).and_return(:stub_value)
         @double.should_receive(:msg).and_return(:double_value)
         expect(@double.msg(:arg)).to equal(:double_value)
         expect(@double.msg).to equal(:stub_value)
@@ -502,14 +502,14 @@ module RSpec
       end
 
       it "raises an error when a previously stubbed method has a negative expectation" do
-        @double.stub(:msg).and_return(:stub_value)
+        Spy.on(@double, :msg).and_return(:stub_value)
         @double.should_not_receive(:msg)
         expect { @double.msg(:arg) }.to raise_error(RSpec::Mocks::MockExpectationError)
       end
 
       it "temporarily replaces a method stub on a non-double" do
         non_double = Object.new
-        non_double.stub(:msg).and_return(:stub_value)
+        Spy.on(non_double, :msg).and_return(:stub_value)
         non_double.should_receive(:msg).with(:arg).and_return(:double_value)
         expect(non_double.msg(:arg)).to equal(:double_value)
         expect(non_double.msg).to equal(:stub_value)
@@ -518,21 +518,21 @@ module RSpec
       end
 
       it "returns the stubbed value when no new value specified" do
-        @double.stub(:msg).and_return(:stub_value)
+        Spy.on(@double, :msg).and_return(:stub_value)
         @double.should_receive(:msg)
         expect(@double.msg).to equal(:stub_value)
         @double.rspec_verify
       end
 
       it "returns the stubbed value when stubbed with args and no new value specified" do
-        @double.stub(:msg).with(:arg).and_return(:stub_value)
+        Spy.on(@double, :msg).with(:arg).and_return(:stub_value)
         @double.should_receive(:msg).with(:arg)
         expect(@double.msg(:arg)).to equal(:stub_value)
         @double.rspec_verify
       end
 
       it "does not mess with the stub's yielded values when also doubleed" do
-        @double.stub(:yield_back).and_yield(:stub_value)
+        Spy.on(@double, :yield_back).and_yield(:stub_value)
         @double.should_receive(:yield_back).and_yield(:double_value)
         @double.yield_back{|v| expect(v).to eq :double_value }
         @double.yield_back{|v| expect(v).to eq :stub_value }
@@ -540,7 +540,7 @@ module RSpec
       end
 
       it "yields multiple values after a similar stub" do
-        File.stub(:open).and_yield(:stub_value)
+        FSpy.on(ile, :open).and_yield(:stub_value)
         File.should_receive(:open).and_yield(:first_call).and_yield(:second_call)
         yielded_args = []
         File.open {|v| yielded_args << v }
@@ -575,7 +575,7 @@ module RSpec
       end
 
       it "calls the block after #should_receive after a similar stub" do
-        @double.stub(:foo).and_return(:bar)
+        Spy.on(@double, :foo).and_return(:bar)
         @double.should_receive(:foo) { add_call }
 
         @double.foo

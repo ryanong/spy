@@ -12,7 +12,7 @@ module RSpec
       end
 
       it "says it responds to messages it does understand" do
-        @double.stub(:foo)
+        Spy.on(@double, :foo)
         expect(@double).to respond_to(:foo)
       end
 
@@ -37,7 +37,7 @@ module RSpec
       end
 
       it "allows explicit stubs" do
-        @double.stub(:foo) { "bar" }
+        Spy.on(@double, :foo) { "bar" }
         expect(@double.foo).to eq("bar")
       end
 
@@ -52,7 +52,7 @@ module RSpec
       end
 
       it 'returns an explicitly stubbed value from an expectation with no implementation' do
-        @double.stub(:foo => "bar")
+        Spy.on(@double, :foo => "bar")
         @double.should_receive(:foo)
         expect(@double.foo).to eq("bar")
       end
