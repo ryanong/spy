@@ -178,5 +178,9 @@ class Spy
     def reset
       @all = nil
     end
+
+    def double(*args)
+      Double.new(*args)
+    end
   end
 end

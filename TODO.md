@@ -1,12 +1,6 @@
 # Todo
 
-* doubles
-* ignore if method doesn't exist if it is a double
-* consecutive return values
-* spy any instance of
-* spy new instance of
-* spy chain(you really shouldn't need this)
+* spy on CONSTANTS
 * argument matchers
 * count matchers
 * watch all calls to an object
-* spy on CONSTANTS
