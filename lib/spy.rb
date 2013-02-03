@@ -55,6 +55,11 @@ class Spy
     self
   end
 
+  def and_call_through
+    raise "can only call through if original method is set" unless original_method
+    @plan = original_method
+  end
+
   def called?
     calls.size > 0
   end
