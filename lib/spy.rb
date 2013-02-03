@@ -60,11 +60,11 @@ class Spy
     @plan = original_method
   end
 
-  def called?
+  def has_been_called?
     calls.size > 0
   end
 
-  def called_with?(*args)
+  def has_been_called_with?(*args)
     calls.any? do |call_log|
       call_log.args == args
     end

@@ -69,18 +69,18 @@ class TestSpy < MiniTest::Unit::TestCase
   def test_spy_can_hook_and_record_a_method_call
     pen_write_spy = Spy.new(@pen, :write)
     pen_write_spy.hook
-    refute pen_write_spy.called?
+    refute pen_write_spy.has_been_called?
     @pen.write("hello")
-    assert pen_write_spy.called?
+    assert pen_write_spy.has_been_called?
     assert_empty @pen.written
   end
 
   def test_spy_can_hook_and_record_a_method_call_on_a_constant
     another_spy = Spy.new(Pen, :another)
     another_spy.hook
-    refute another_spy.called?
+    refute another_spy.has_been_called?
     assert_nil Pen.another
-    assert another_spy.called?
+    assert another_spy.has_been_called?
     another_spy.unhook
     assert_equal "another", Pen.another
   end
@@ -90,7 +90,7 @@ class TestSpy < MiniTest::Unit::TestCase
     pen_write_spy.hook
     pen_write_spy.unhook
     @pen.write("hello")
-    refute pen_write_spy.called?
+    refute pen_write_spy.has_been_called?
   end
 
   def test_spy_cannot_hook_a_non_existent_method
@@ -147,15 +147,15 @@ class TestSpy < MiniTest::Unit::TestCase
     end
   end
 
-  def test_called_with?
+  def test_has_been_called_with?
     pen_write_spy = Spy.on(@pen, :write)
-    refute pen_write_spy.called_with?("hello")
+    refute pen_write_spy.has_been_called_with?("hello")
     @pen.write("hello")
-    assert pen_write_spy.called_with?("hello")
+    assert pen_write_spy.has_been_called_with?("hello")
     @pen.write("world")
-    assert pen_write_spy.called_with?("hello")
+    assert pen_write_spy.has_been_called_with?("hello")
     @pen.write("hello world")
-    assert pen_write_spy.called_with?("hello")
+    assert pen_write_spy.has_been_called_with?("hello")
   end
 
   def test_spy_hook_records_number_of_calls
@@ -219,6 +219,6 @@ class TestSpy < MiniTest::Unit::TestCase
     pen_write_spy = Spy.on(@pen, :write)
     Spy.off(@pen,:write)
     assert_equal "hello world", @pen.write("hello world")
-    refute pen_write_spy.called?
+    refute pen_write_spy.has_been_called?
   end
 end

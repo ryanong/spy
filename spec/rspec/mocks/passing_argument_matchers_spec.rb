@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module RSpec
   module Mocks
-    describe Methods do
+    describe Methods, :broken do
       before(:each) do
         @double = double('double')
         KSpy.on(ernel, :warn)

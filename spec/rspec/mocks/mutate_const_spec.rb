@@ -18,7 +18,7 @@ end
 
 module RSpec
   module Mocks
-    describe "Constant Mutating" do
+    describe "Constant Mutating", :broken do
       include RSpec::Mocks::RecursiveConstMethods
 
       def reset_rspec_mocks
