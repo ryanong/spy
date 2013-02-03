@@ -104,24 +104,22 @@ module Spies
     end
 
     def arity_range
-      if original_method
-        @arity_range ||=
-          begin
-            min = max = 0
-            original_method.parameters.each do |type,_|
-              case type
-              when :req
-                min += 1
-                max += 1
-              when :opt
-                max += 1
-              when :rest
-                max = Float::INFINITY
-              end
+      @arity_range ||=
+        if original_method
+          min = max = 0
+          original_method.parameters.each do |type,_|
+            case type
+            when :req
+              min += 1
+              max += 1
+            when :opt
+              max += 1
+            when :rest
+              max = Float::INFINITY
             end
-            (min..max)
           end
-      end
+          (min..max)
+        end
     end
 
     class << self
