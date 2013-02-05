@@ -21,33 +21,38 @@ describe "and_call_through" do
     let(:instance) { klass.new }
 
     it 'passes the received message through to the original method' do
-      Spy.on(instance, :meth_1).and_call_through
+      spy = Spy.on(instance, :meth_1).and_call_through
       expect(instance.meth_1).to eq(:original)
+      expect(spy).to have_been_called
     end
 
     it 'passes args and blocks through to the original method' do
-      Spy.on(instance, :meth_2).and_call_through
+      spy = Spy.on(instance, :meth_2).and_call_through
       value = instance.meth_2(:submitted_arg) { |a, b| [a, b] }
       expect(value).to eq([:submitted_arg, :additional_yielded_arg])
+      expect(spy).to have_been_called
     end
 
     it 'works for singleton methods' do
       def instance.foo; :bar; end
-      Spy.on(instance, :foo).and_call_through
+      spy = Spy.on(instance, :foo).and_call_through
       expect(instance.foo).to eq(:bar)
+      expect(spy).to have_been_called
     end
 
     it 'works for methods added through an extended module' do
       instance.extend Module.new { def foo; :bar; end }
-      Spy.on(instance, :foo).and_call_through
+      spy = Spy.on(instance, :foo).and_call_through
       expect(instance.foo).to eq(:bar)
+      expect(spy).to have_been_called
     end
 
     it "works for method added through an extended module onto a class's ancestor" do
       sub_sub_klass = Class.new(Class.new(klass))
       klass.extend Module.new { def foo; :bar; end }
-      Spy.on(sub_sub_klass, :foo).and_call_through
+      spy = Spy.on(sub_sub_klass, :foo).and_call_through
       expect(sub_sub_klass.foo).to eq(:bar)
+      expect(spy).to have_been_called
     end
 
     it "finds the method on the most direct ancestor even if the method " +
@@ -55,32 +60,37 @@ describe "and_call_through" do
       klass.extend Module.new { def foo; :klass_bar; end }
       sub_klass = Class.new(klass)
       sub_klass.extend Module.new { def foo; :sub_klass_bar; end }
-      Spy.on(sub_klass, :foo).and_call_through
+      spy = Spy.on(sub_klass, :foo).and_call_through
       expect(sub_klass.foo).to eq(:sub_klass_bar)
+      expect(spy).to have_been_called
     end
 
     it 'works for class methods defined on a superclass' do
       subclass = Class.new(klass)
-      Spy.on(subclass, :new_instance).and_call_through
+      spy = Spy.on(subclass, :new_instance).and_call_through
       expect(subclass.new_instance).to be_a(subclass)
+      expect(spy).to have_been_called
     end
 
     it 'works for class methods defined on a grandparent class' do
       sub_subclass = Class.new(Class.new(klass))
-      Spy.on(sub_subclass, :new_instance).and_call_through
+      spy = Spy.on(sub_subclass, :new_instance).and_call_through
       expect(sub_subclass.new_instance).to be_a(sub_subclass)
+      expect(spy).to have_been_called
     end
 
     it 'works for class methods defined on the Class class' do
-      Spy.on(klass, :new).and_call_through
+      spy = Spy.on(klass, :new).and_call_through
       expect(klass.new).to be_an_instance_of(klass)
+      expect(spy).to have_been_called
     end
 
     it "works for instance methods defined on the object's class's superclass" do
       subclass = Class.new(klass)
       inst = subclass.new
-      Spy.on(inst, :meth_1).and_call_through
+      spy = Spy.on(inst, :meth_1).and_call_through
       expect(inst.meth_1).to eq(:original)
+      expect(spy).to have_been_called
     end
 
     it 'works for aliased methods' do
@@ -90,14 +100,21 @@ describe "and_call_through" do
         end
       end
 
-      Spy.on(klass, :alternate_new).and_call_through
+      spy = Spy.on(klass, :alternate_new).and_call_through
       expect(klass.alternate_new).to be_an_instance_of(klass)
+      expect(spy).to have_been_called
     end
 
     context 'on an object that defines method_missing' do
       before do
         klass.class_eval do
-          private
+          def respond_to_missing?(name, _)
+            if name.to_s == "greet_jack"
+              true
+            else
+              super
+            end
+          end
 
           def method_missing(name, *args)
             if name.to_s == "greet_jack"
@@ -110,12 +127,13 @@ describe "and_call_through" do
       end
 
       it 'works when the method_missing definition handles the message' do
-        Spy.on(instance, :greet_jack).and_call_through
+        spy = Spy.on(instance, :greet_jack).and_call_through
         expect(instance.greet_jack).to eq("Hello, jack")
+        expect(spy).to have_been_called
       end
 
       it 'raises an error on invocation if method_missing does not handle the message' do
-        Spy.on(instance, :not_a_handled_message).and_call_through
+        Spy.new(instance, :not_a_handled_message).hook(force: true).and_call_through
 
         # Note: it should raise a NoMethodError (and usually does), but
         # due to a weird rspec-expectations issue (see #183) it sometimes
@@ -128,50 +146,6 @@ describe "and_call_through" do
           instance.not_a_handled_message
         }.to raise_error(NameError, /not_a_handled_message/)
       end
-    end
-  end
-
-  context "on a partial mock object that overrides #method" do
-    let(:request_klass) do
-      Struct.new(:method, :url) do
-        def perform
-          :the_response
-        end
-
-        def self.method
-          :some_method
-        end
-      end
-    end
-
-    let(:request) { request_klass.new(:get, "http://foo.com/bar") }
-
-    it 'still works even though #method has been overriden' do
-      Spy.on(request, :perform).and_call_through
-      expect(request.perform).to eq(:the_response)
-    end
-
-    it 'works for a singleton method' do
-      def request.perform
-        :a_response
-      end
-
-      Spy.on(request, :perform).and_call_through
-      expect(request.perform).to eq(:a_response)
-    end
-  end
-
-  context "on a pure mock object" do
-    let(:instance) { double }
-
-    it 'raises an error even if the mock object responds to the message' do
-      expect(instance.to_s).to be_a(String)
-      mock_expectation = Spy.on(instance, :to_s)
-      instance.to_s # to satisfy the expectation
-
-      expect {
-        mock_expectation.and_call_through
-      }.to raise_error(/and_call_through.*partial mock/i)
     end
   end
 end

@@ -1,5 +1,7 @@
 require "rspec/autorun"
 require "spy"
+require "pry"
+require "pry-nav"
 
 RSpec::Matchers.define :include_method do |expected|
   match do |actual|
@@ -28,6 +30,10 @@ RSpec.configure do |config|
 
   config.after(:each, :silence_warnings) do
     $VERBOSE = old_verbose
+  end
+
+  config.after(:each) do
+    Spy.teardown
   end
 end
 

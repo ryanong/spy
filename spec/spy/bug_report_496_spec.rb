@@ -11,7 +11,7 @@ module BugReport496
     it "is received" do
       new_spy = Spy.on(BaseClass, :new)
       SubClass.new
-      new_spy.calls.count.should == 1
+      expect(new_spy.calls.count).to equal(1)
     end
   end
 end

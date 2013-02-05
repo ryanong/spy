@@ -7,7 +7,7 @@ module RSpec
         @base_class     = Class.new
         @concrete_class = Class.new(@base_class)
 
-        Spy.on(@base_class, :find).and_return "stubbed_value"
+        Spy.stub(@base_class, :find).and_return "stubbed_value"
       end
 
       it "returns the value for the stub on the base class" do

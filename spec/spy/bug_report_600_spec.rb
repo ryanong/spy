@@ -14,7 +14,7 @@ module BugReport600
       define_method_spy = Spy.on(ExampleClass, :define_method)
       ExampleClass.method_that_uses_define_method
 
-      define_method_spy.should bean_called_with("defined_method")
+      expect(define_method_spy).to have_been_called_with("defined_method")
     end
 
     it "restores the original method" do

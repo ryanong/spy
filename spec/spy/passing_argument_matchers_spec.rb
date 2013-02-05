@@ -5,7 +5,7 @@ module RSpec
     describe Methods, :broken do
       before(:each) do
         @double = double('double')
-        KSpy.on(ernel, :warn)
+        Spy.on(Kernel, :warn)
       end
 
       after(:each) do

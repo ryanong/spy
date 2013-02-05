@@ -6,7 +6,7 @@ module RSpec
       describe "with no args" do
         it "execs the block when called" do
           obj = stub()
-          Spy.on(obj, :foo) { :bar }
+          Spy.stub(obj, :foo).and_return { :bar }
           expect(obj.foo).to eq :bar
         end
       end
@@ -14,7 +14,7 @@ module RSpec
       describe "with one arg" do
         it "execs the block with that arg when called" do
           obj = stub()
-          Spy.on(obj, :foo) {|given| given}
+          Spy.stub(obj, :foo).and_return {|given| given}
           expect(obj.foo(:bar)).to eq :bar
         end
       end
@@ -22,7 +22,7 @@ module RSpec
       describe "with variable args" do
         it "execs the block when called" do
           obj = stub()
-          Spy.on(obj, :foo) {|*given| given.first}
+          Spy.stub(obj, :foo).and_return {|*given| given.first}
           expect(obj.foo(:bar)).to eq :bar
         end
       end
@@ -33,38 +33,19 @@ module RSpec
       it "replaces the stubbed method with the original method" do
         obj = Object.new
         def obj.foo; :original; end
-        Spy.on(obj, :foo)
-        obj.unstub(:foo)
+        Spy.stub(obj, :foo)
+        Spy.off(obj, :foo)
         expect(obj.foo).to eq :original
-      end
-
-      it "removes all stubs with the supplied method name" do
-        obj = Object.new
-        def obj.foo; :original; end
-        Spy.on(obj, :foo).with(1)
-        Spy.on(obj, :foo).with(2)
-        obj.unstub(:foo)
-        expect(obj.foo).to eq :original
-      end
-
-      it "does not remove any expectations with the same method name" do
-        obj = Object.new
-        def obj.foo; :original; end
-        obj.should_receive(:foo).with(3).and_return(:three)
-        Spy.on(obj, :foo).with(1)
-        Spy.on(obj, :foo).with(2)
-        obj.unstub(:foo)
-        expect(obj.foo(3)).to eq :three
       end
 
       it "restores the correct implementations when stubbed and unstubbed on a parent and child class" do
         parent = Class.new
         child  = Class.new(parent)
 
-        Spy.on(parent, :new)
-        Spy.on(child, :new)
-        parent.unstub(:new)
-        child.unstub(:new)
+        Spy.stub(parent, :new)
+        Spy.stub(child, :new)
+        Spy.off(parent, :new)
+        Spy.off(child, :new)
 
         expect(parent.new).to be_an_instance_of parent
         expect(child.new).to be_an_instance_of child
@@ -73,8 +54,8 @@ module RSpec
       it "raises a MockExpectationError if the method has not been stubbed" do
         obj = Object.new
         expect {
-          obj.unstub(:foo)
-        }.to raise_error(RSpec::Mocks::MockExpectationError)
+          Spy.off(obj, :foo)
+        }.to raise_error
       end
     end
   end
