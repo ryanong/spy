@@ -189,27 +189,36 @@ class Spy
       removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
+    # get all hooked methods
+    # @return [Array<Spy>]
     def all
       @all ||= []
     end
 
+    # unhook all methods
     def teardown
       all.each(&:unhook)
       reset
     end
 
+    # reset all hooked methods
     def reset
       @all = nil
     end
 
+    # (see Double#new)
     def double(*args)
       Double.new(*args)
     end
 
+    # @private
     def __secret_method_key__
       @__secret_method_key__ ||= Object.new
     end
 
+    # retrieve the spy from an object
+    # @params base_object
+    # @method_names *[Symbol, Hash]
     def get(base_object, *method_names)
       spies = method_names.map do |method_name|
         if base_object.singleton_methods.include?(method_name.to_sym) && base_object.method(method_name).parameters == [[:rest, :__spy_args], [:block, :block]]
