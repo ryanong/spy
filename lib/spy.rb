@@ -26,6 +26,8 @@ class Spy
 
     __method_spy__ = self
     base_object.define_singleton_method(method_name) do |*args, &block|
+      # a hack to allow Spy to retrieve the spy from the object from this
+      # specific method
       if args.first === __method_spy__.class.__secret_method_key__
         __method_spy__
       else
