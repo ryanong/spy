@@ -11,6 +11,9 @@ class Spy
     reset!
   end
 
+  # hooks the method into the object and stashes original method if it exists
+  # @param opts [Hash{force => false, visibility => nil}] set :force => true if you want it to ignore if the method exists, or visibility to [:public, :protected, :private] to overwride current visibility
+  # @return self
   def hook(opts = {})
     raise "#{method_name} method has already been hooked" if hooked?
     opts[:force] ||= base_object.is_a?(Double)
@@ -34,10 +37,13 @@ class Spy
     end
 
     base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
+
     @hooked = true
     self
   end
 
+  # unhooks method from object
+  # @return self
   def unhook
     raise "#{method_name} method has not been hooked" unless hooked?
     base_object.singleton_class.send(:remove_method, method_name)
@@ -49,10 +55,17 @@ class Spy
     self
   end
 
+  # is the spy hooked?
+  # @return Boolean
   def hooked?
     @hooked
   end
 
+
+  # sets the return value of given spied method
+  # @params return value
+  # @params return block
+  # @return self
   def and_return(value = nil, &block)
     if block_given?
       raise ArgumentError.new("value and block conflict. Choose one") if !value.nil?
@@ -63,6 +76,8 @@ class Spy
     self
   end
 
+  # tells the spy to call the original method
+  # @return self
   def and_call_through
     raise "can only call through if original method is set" unless method_visibility
     if original_method
@@ -79,18 +94,22 @@ class Spy
     calls.size > 0
   end
 
+  # check if the method was called with the exact arguments
   def has_been_called_with?(*args)
     calls.any? do |call_log|
       call_log.args == args
     end
   end
 
+  # record that the method has been called. You really shouldn't use this
+  # method.
   def record(object, args, block)
     check_arity!(args.size)
     calls << CallLog.new(object, args, block)
     @plan.call(*args, &block) if @plan
   end
 
+  # reset the call log
   def reset!
     @calls = []
     clear_method!
@@ -146,6 +165,11 @@ class Spy
   end
 
   class << self
+    # create a spy on given object
+    # @params base_object
+    # @params method_names *[Symbol] will spy on these methods
+    # @params method_names [Hash] will spy on these methods and also set default return values
+    # @return [Spy, Array<Spy>]
     def on(base_object, *method_names)
       spies = method_names.map do |method_name|
         create_and_hook_spy(base_object, method_name)
@@ -154,6 +178,7 @@ class Spy
       spies.one? ? spies.first : spies
     end
 
+    # removes the spy from the
     def off(base_object, *method_names)
       removed_spies = method_names.map do |method_name|
         unhook_and_remove_spy(base_object, method_name)
