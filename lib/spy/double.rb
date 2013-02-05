@@ -1,14 +1,9 @@
 class Spy
   class Double
     def initialize(name, *args)
-      if name.is_a?(Hash) && args.empty?
-        args = [name]
-        @name = nil
-      else
-        @name = name
-      end
+      @name = name
 
-      if args.present?
+      if args.size > 0
         Spy.on(self,*args)
       end
     end

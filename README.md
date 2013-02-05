@@ -61,8 +61,10 @@ end
 person = Person.new
 
 first_name_spy = Spy.on(person, :first_name)
-person.first_name          #=> nil
-first_name_spy.called?     #=> true
+person.first_name            #=> nil
+first_name_spy.called?       #=> true
+
+Spy.get(person, :first_name) #=> first_name_spy
 
 Spy.off(person, :first_name)
 person.first_name          #=> "John"

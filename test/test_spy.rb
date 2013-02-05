@@ -251,4 +251,11 @@ class TestSpy < MiniTest::Unit::TestCase
     assert_equal "hello world", @pen.write("hello world")
     refute pen_write_spy.has_been_called?
   end
+
+  def test_spy_get_can_retrieve_a_spy
+    pen_write_spy = Spy.on(@pen, :write).and_return(:hello)
+    assert_equal :hello, @pen.write(:world)
+    assert_equal pen_write_spy, Spy.get(@pen, :write)
+    assert Spy.get(@pen, :write).has_been_called?
+  end
 end

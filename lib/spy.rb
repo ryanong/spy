@@ -13,7 +13,7 @@ class Spy
 
   def hook(opts = {})
     raise "#{method_name} method has already been hooked" if hooked?
-    opts[:force] ||= base_object.kind_of?(Double)
+    opts[:force] ||= base_object.is_a?(Double)
     if base_object.respond_to?(method_name, true) || !opts[:force]
       @original_method = base_object.method(method_name)
     end
@@ -24,9 +24,13 @@ class Spy
       base_object.singleton_class.send(:remove_method, method_name)
     end
 
-    __spies_spy = self
+    __method_spy__ = self
     base_object.define_singleton_method(method_name) do |*args, &block|
-      __spies_spy.record(self,args,block)
+      if args.first === __method_spy__.class.__secret_method_key__
+        __method_spy__
+      else
+        __method_spy__.record(self,args,block)
+      end
     end
 
     base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
@@ -151,14 +155,6 @@ class Spy
       spies.one? ? spies.first : spies
     end
 
-    def stub(base_object, *method_names)
-      spies = method_names.map do |method_name|
-        create_and_hook_spy(base_object, method_name, force: true)
-      end.flatten
-
-      spies.one? ? spies.first : spies
-    end
-
     def off(base_object, *method_names)
       removed_spies = method_names.map do |method_name|
         unhook_and_remove_spy(base_object, method_name)
@@ -185,17 +181,16 @@ class Spy
       Double.new(*args)
     end
 
-    def find(base_object, *method_names)
-      method_names = method_names.map do |method_name|
-        case method_name
-        when String, Symbol
-          method_name
-        when Hash
-          method_name.keys
-        end
-      end.flatten
+    def __secret_method_key__
+      @__secret_method_key__ ||= Object.new
+    end
 
-      @all[base_object.object_id].values_at(*method_names)
+    def get(base_object, *method_names)
+      spies = method_names.map do |method_name|
+        base_object.send(method_name, __secret_method_key__)
+      end
+
+      spies.one? ? spies.first : spies
     end
 
     private
