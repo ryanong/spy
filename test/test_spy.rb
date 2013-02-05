@@ -53,11 +53,8 @@ class TestSpy < MiniTest::Unit::TestCase
   end
 
   def setup
+    Spy.teardown
     @pen = Pen.new
-  end
-
-  def teardown
-    Spy.reset
   end
 
   def test_spy_on_hook_and_saves_spy

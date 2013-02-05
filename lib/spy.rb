@@ -16,6 +16,7 @@ class Spy
   # @return self
   def hook(opts = {})
     raise "#{method_name} method has already been hooked" if hooked?
+    raise "#{base_object} method '#{method_name}' has already been hooked" if self.class.get(base_object, method_name)
     opts[:force] ||= base_object.is_a?(Double)
     if base_object.respond_to?(method_name, true) || !opts[:force]
       @original_method = base_object.method(method_name)
@@ -28,11 +29,11 @@ class Spy
     end
 
     __method_spy__ = self
-    base_object.define_singleton_method(method_name) do |*args, &block|
-      if args.first === __method_spy__.class.__secret_method_key__
+    base_object.define_singleton_method(method_name) do |*__spy_args, &block|
+      if __spy_args.first === __method_spy__.class.__secret_method_key__
         __method_spy__
       else
-        __method_spy__.record(self,args,block)
+        __method_spy__.record(self,__spy_args,block)
       end
     end
 
@@ -175,7 +176,7 @@ class Spy
         create_and_hook_spy(base_object, method_name)
       end.flatten
 
-      spies.one? ? spies.first : spies
+      spies.size > 1 ? spies : spies.first
     end
 
     # removes the spy from the
@@ -185,7 +186,7 @@ class Spy
       end.flatten
 
       raise "No spies found" if removed_spies.empty?
-      removed_spies.one? ? removed_spies.first : removed_spies
+      removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
     def all
@@ -211,10 +212,12 @@ class Spy
 
     def get(base_object, *method_names)
       spies = method_names.map do |method_name|
-        base_object.send(method_name, __secret_method_key__)
+        if base_object.singleton_methods.include?(method_name.to_sym) && base_object.method(method_name).parameters == [[:rest, :__spy_args], [:block, :block]]
+          base_object.send(method_name, __secret_method_key__)
+        end
       end
 
-      spies.one? ? spies.first : spies
+      spies.size > 1 ? spies : spies.first
     end
 
     private
