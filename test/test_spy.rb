@@ -61,9 +61,35 @@ class TestSpy < MiniTest::Unit::TestCase
   end
 
   def test_spy_on_hook_and_saves_spy
-    pen_write_spy = Spy.on(@pen, :write)
+    pen_write_spy = Spy.on(@pen, :write).and_return("hello")
+    assert_equal "hello", @pen.write(nil)
     assert_kind_of Spy, pen_write_spy
-    assert_equal Spy.all, [pen_write_spy]
+    assert_equal [pen_write_spy], Spy.all
+    assert pen_write_spy.has_been_called?
+  end
+
+  def test_spy_on_hooks_and_saves_spy_with_array
+    pen_write_spy, pen_write_hello_spy = Spy.on(@pen, :write, :write_hello)
+    assert_nil @pen.write(nil)
+    assert_nil @pen.write_hello
+
+    assert_kind_of Spy, pen_write_spy
+    assert_kind_of Spy, pen_write_hello_spy
+    assert_equal [pen_write_spy, pen_write_hello_spy], Spy.all
+    assert pen_write_spy.has_been_called?
+    assert pen_write_hello_spy.has_been_called?
+  end
+
+  def test_spy_on_hooks_and_saves_spy_with_array
+    pen_write_spy, pen_write_hello_spy = Spy.on(@pen, write: "hello", write_hello: "world")
+    assert_equal "hello", @pen.write(nil)
+    assert_equal "world", @pen.write_hello
+
+    assert_kind_of Spy, pen_write_spy
+    assert_kind_of Spy, pen_write_hello_spy
+    assert_equal Spy.all, [pen_write_spy, pen_write_hello_spy]
+    assert pen_write_spy.has_been_called?
+    assert pen_write_hello_spy.has_been_called?
   end
 
   def test_spy_can_hook_and_record_a_method_call

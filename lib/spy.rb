@@ -17,6 +17,7 @@ class Spy
     if method_visibility || !opts[:force]
       @original_method = base_object.method(method_name)
       if base_object.singleton_methods.include?(method_name)
+        @removed_singleton_method = true
         base_object.singleton_class.send(:remove_method, method_name)
       end
     end
@@ -35,7 +36,7 @@ class Spy
   def unhook
     raise "#{method_name} method has not been hooked" unless hooked?
     base_object.singleton_class.send(:remove_method, method_name)
-    base_object.define_singleton_method(method_name, original_method) if original_method
+    base_object.define_singleton_method(method_name, original_method) if @removed_singleton_method
     base_object.singleton_class.send(method_visibility, method_name) if method_visibility
     clear_method!
     self
@@ -87,19 +88,19 @@ class Spy
 
   def clear_method!
     @hooked = false
-    @original_method = @arity_range = @method_visiblity = nil
+    @original_method = @arity_range = @method_visiblity = @removed_singleton_method = nil
   end
 
   def method_visibility
     @method_visibility ||=
-      if base_object.class.public_method_defined? method_name
-        :public
-      elsif base_object.class.protected_method_defined? method_name
-        :protected
+      if base_object.respond_to? method_name
+        if base_object.class.public_method_defined? method_name
+          :public
+        elsif base_object.class.protected_method_defined? method_name
+          :protected
+        end
       elsif base_object.class.private_method_defined? method_name
         :private
-      else
-        nil
       end
   end
 
@@ -132,43 +133,28 @@ class Spy
   end
 
   class << self
-    def on(base_object, method_name, *args)
-      case method_name
-      when String, Symbol
-        spy = new(base_object, method_name).hook
-        all << spy
-        spies = [spy]
-      when Hash
-        spies = arg.map do |name, result|
-          on(base_object, name).and_return(result)
-        end
-      else
-        raise ArgumentError.new "#{method_name.class} is an invalid class, #on only accepts String, Symbol, and Hash"
-      end
-
-      spies += args.map do |arg|
-        on(base_object, arg)
+    def on(base_object, *method_names)
+      spies = method_names.map do |method_name|
+        create_and_hook_spy(base_object, method_name)
       end.flatten
 
-      if spies.size == 1
-        spies.first
-      else
-        spies
-      end
+      spies.one? ? spies.first : spies
     end
 
-    def off(base_object, method_name, *args)
-      removed_spies = []
-      all.delete_if do |spy|
-        if spy.base_object == base_object && spy.method_name == method_name
-          spy.unhook
-          removed_spies << spy
-        end
-      end
-
-      removed_spies + args.map do |arg|
-        off(base_object, arg)
+    def stub(base_object, *method_names)
+      spies = method_names.map do |method_name|
+        create_and_hook_spy(base_object, method_name, force: true)
       end.flatten
+
+      spies.one? ? spies.first : spies
+    end
+
+    def off(base_object, *method_names)
+      removed_spies = method_names.map do |method_name|
+        unhook_and_remove_spy(base_object, method_name)
+      end.flatten
+
+      removed_spies.one? ? removed_spies.first : removed_spies
     end
 
     def all
@@ -186,6 +172,46 @@ class Spy
 
     def double(*args)
       Double.new(*args)
+    end
+
+    def find(base_object, *method_names)
+      method_names = method_names.map do |method_name|
+        case method_name
+        when String, Symbol
+          method_name
+        when Hash
+          method_name.keys
+        end
+      end.flatten
+
+      @all[base_object.object_id].values_at(*method_names)
+    end
+
+    private
+
+    def create_and_hook_spy(base_object, method_name, opts = {})
+      case method_name
+      when String, Symbol
+        spy = new(base_object, method_name).hook(opts)
+        all << spy
+        spy
+      when Hash
+        method_name.map do |name, result|
+          create_and_hook_spy(base_object, name, opts).and_return(result)
+        end
+      else
+        raise ArgumentError.new "#{method_name.class} is an invalid class, #on only accepts String, Symbol, and Hash"
+      end
+    end
+
+    def unhook_and_remove_spy(base_object, method_name)
+      removed_spies = []
+      all.delete_if do |spy|
+        if spy.base_object == base_object && spy.method_name == method_name
+          removed_spies << spy.unhook
+        end
+      end
+      removed_spies
     end
   end
 end
