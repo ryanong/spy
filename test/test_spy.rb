@@ -87,7 +87,7 @@ class TestSpy < MiniTest::Unit::TestCase
 
     assert_kind_of Spy, pen_write_spy
     assert_kind_of Spy, pen_write_hello_spy
-    assert_equal Spy.all, [pen_write_spy, pen_write_hello_spy]
+    assert_equal [pen_write_spy, pen_write_hello_spy], Spy.all
     assert pen_write_spy.has_been_called?
     assert pen_write_hello_spy.has_been_called?
   end
