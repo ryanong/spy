@@ -164,6 +164,7 @@ class Spy
         unhook_and_remove_spy(base_object, method_name)
       end.flatten
 
+      raise "No spies found" if removed_spies.empty?
       removed_spies.one? ? removed_spies.first : removed_spies
     end
 
