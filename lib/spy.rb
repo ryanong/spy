@@ -5,7 +5,7 @@ require "spy/dsl"
 class Spy
   CallLog = Struct.new(:object, :args, :block)
 
-  attr_reader :base_object, :method_name, :calls
+  attr_reader :base_object, :method_name, :calls, :original_method
   def initialize(object, method_name)
     @base_object, @method_name = object, method_name
     reset!
@@ -26,8 +26,6 @@ class Spy
 
     __method_spy__ = self
     base_object.define_singleton_method(method_name) do |*args, &block|
-      # a hack to allow Spy to retrieve the spy from the object from this
-      # specific method
       if args.first === __method_spy__.class.__secret_method_key__
         __method_spy__
       else
@@ -100,7 +98,6 @@ class Spy
   end
 
   private
-  attr_reader :original_method
 
   def clear_method!
     @hooked = false
