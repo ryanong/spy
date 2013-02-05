@@ -224,17 +224,21 @@ class TestSpy < MiniTest::Unit::TestCase
     end
   end
 
-  def test_hook_mimics_method_visibility
+  def test_hook_mimics_public_visibility
     Spy.on(@pen, :public_method)
     assert @pen.singleton_class.public_method_defined? :public_method
     refute @pen.singleton_class.protected_method_defined? :public_method
     refute @pen.singleton_class.private_method_defined? :public_method
+  end
 
+  def test_hook_mimics_protected_visibility
     Spy.on(@pen, :protected_method)
     refute @pen.singleton_class.public_method_defined? :protected_method
     assert @pen.singleton_class.protected_method_defined? :protected_method
     refute @pen.singleton_class.private_method_defined? :protected_method
+  end
 
+  def test_hook_mimics_private_visibility
     Spy.on(@pen, :private_method)
     refute @pen.singleton_class.public_method_defined? :private_method
     refute @pen.singleton_class.protected_method_defined? :private_method

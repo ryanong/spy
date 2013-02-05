@@ -14,12 +14,14 @@ class Spy
   def hook(opts = {})
     raise "#{method_name} method has already been hooked" if hooked?
     opts[:force] ||= base_object.kind_of?(Double)
-    if method_visibility || !opts[:force]
+    if base_object.respond_to?(method_name, true) || !opts[:force]
       @original_method = base_object.method(method_name)
-      if base_object.singleton_methods.include?(method_name)
-        @removed_singleton_method = true
-        base_object.singleton_class.send(:remove_method, method_name)
-      end
+    end
+
+    opts[:visibility] ||= method_visibility
+
+    if original_method && original_method.owner == base_object.singleton_class
+      base_object.singleton_class.send(:remove_method, method_name)
     end
 
     __spies_spy = self
@@ -27,7 +29,6 @@ class Spy
       __spies_spy.record(self,args,block)
     end
 
-    opts[:visibility] ||= method_visibility
     base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
     @hooked = true
     self
@@ -36,8 +37,10 @@ class Spy
   def unhook
     raise "#{method_name} method has not been hooked" unless hooked?
     base_object.singleton_class.send(:remove_method, method_name)
-    base_object.define_singleton_method(method_name, original_method) if @removed_singleton_method
-    base_object.singleton_class.send(method_visibility, method_name) if method_visibility
+    if original_method && original_method.owner == base_object.singleton_class
+      base_object.define_singleton_method(method_name, original_method)
+      base_object.singleton_class.send(method_visibility, method_name) if method_visibility
+    end
     clear_method!
     self
   end
@@ -57,8 +60,15 @@ class Spy
   end
 
   def and_call_through
-    raise "can only call through if original method is set" unless original_method
-    @plan = original_method
+    raise "can only call through if original method is set" unless method_visibility
+    if original_method
+      @plan = original_method
+    else
+      @plan = Proc.new do |*args, &block|
+        base_object.send(:method_missing, method_name, *args, &block)
+      end
+    end
+    self
   end
 
   def has_been_called?
@@ -88,20 +98,20 @@ class Spy
 
   def clear_method!
     @hooked = false
-    @original_method = @arity_range = @method_visiblity = @removed_singleton_method = nil
+    @original_method = @arity_range = @method_visibility = nil
   end
 
   def method_visibility
     @method_visibility ||=
-      if base_object.respond_to? method_name
-        if base_object.class.public_method_defined? method_name
-          :public
-        elsif base_object.class.protected_method_defined? method_name
-          :protected
+        if base_object.respond_to?(method_name)
+          if original_method && original_method.owner.protected_method_defined?(method_name)
+            :protected
+          else
+            :public
+          end
+        elsif base_object.respond_to?(method_name, true)
+          :private
         end
-      elsif base_object.class.private_method_defined? method_name
-        :private
-      end
   end
 
   def check_arity!(arity)
