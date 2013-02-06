@@ -3,6 +3,7 @@ require "spy/double"
 require "spy/dsl"
 
 class Spy
+  SECRET_SPY_KEY = Object.new
   CallLog = Struct.new(:object, :args, :block)
 
   attr_reader :base_object, :method_name, :calls, :original_method
@@ -30,7 +31,7 @@ class Spy
 
     __method_spy__ = self
     base_object.define_singleton_method(method_name) do |*__spy_args, &block|
-      if __spy_args.first === __method_spy__.class.__secret_method_key__
+      if __spy_args.first === __method_spy__.class::SECRET_SPY_KEY
         __method_spy__
       else
         __method_spy__.record(self,__spy_args,block)
@@ -211,18 +212,13 @@ class Spy
       Double.new(*args)
     end
 
-    # @private
-    def __secret_method_key__
-      @__secret_method_key__ ||= Object.new
-    end
-
     # retrieve the spy from an object
     # @params base_object
     # @method_names *[Symbol, Hash]
     def get(base_object, *method_names)
       spies = method_names.map do |method_name|
         if base_object.singleton_methods.include?(method_name.to_sym) && base_object.method(method_name).parameters == [[:rest, :__spy_args], [:block, :block]]
-          base_object.send(method_name, __secret_method_key__)
+          base_object.send(method_name, SECRET_SPY_KEY)
         end
       end
 
