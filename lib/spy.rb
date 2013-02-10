@@ -198,6 +198,7 @@ class Spy
         raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
       end
     end
+
     # create a spy on given object
     # @params base_object
     # @params *method_names [Symbol] will spy on these methods
@@ -208,7 +209,7 @@ class Spy
         create_and_hook_spy(base_object, method_name)
       end.flatten
 
-      method_names.size > 1 ? spies : spies.first
+      spies.size > 1 ? spies : spies.first
     end
 
     # removes the spy from the from the given object
@@ -222,7 +223,7 @@ class Spy
         spies
       end.flatten
 
-      method_names.size > 1 ? removed_spies : removed_spies.first
+      removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
     # get all hooked methods
@@ -257,7 +258,7 @@ class Spy
         end
       end
 
-      method_names.size > 1 ? spies : spies.first
+      spies.size > 1 ? spies : spies.first
     end
 
     private
