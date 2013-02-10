@@ -8,6 +8,7 @@ class Spy
 
   attr_reader :base_object, :method_name, :calls, :original_method
   def initialize(object, method_name)
+    @was_hooked = false
     @base_object, @method_name = object, method_name
     reset!
   end
@@ -40,7 +41,8 @@ class Spy
 
     base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
 
-    @hooked = true
+    self.class.all << self
+    @hooked = @was_hooked = true
     self
   end
 
@@ -54,6 +56,7 @@ class Spy
       base_object.singleton_class.send(method_visibility, method_name) if method_visibility
     end
     clear_method!
+    self.class.all.delete(self)
     self
   end
 
@@ -78,6 +81,14 @@ class Spy
     self
   end
 
+  def and_yield(*args)
+    yield eval_context = Object.new if block_given?
+    @plan = Proc.new do |&block|
+      eval_context.instance_exec(*args, &block)
+    end
+    self
+  end
+
   # tells the spy to call the original method
   # @return self
   def and_call_through
@@ -93,11 +104,13 @@ class Spy
   end
 
   def has_been_called?
+    raise "was never hooked" unless @was_hooked
     calls.size > 0
   end
 
   # check if the method was called with the exact arguments
   def has_been_called_with?(*args)
+    raise "was never hooked" unless @was_hooked
     calls.any? do |call_log|
       call_log.args == args
     end
@@ -108,7 +121,8 @@ class Spy
   def record(object, args, block)
     check_arity!(args.size)
     calls << CallLog.new(object, args, block)
-    @plan.call(*args, &block) if @plan
+    default_return_val = nil
+    @plan ? @plan.call(*args, &block) : default_return_val
   end
 
   # reset the call log
@@ -120,6 +134,18 @@ class Spy
 
   private
 
+  def call_with_yield(&block)
+    raise "no block sent"  unless block
+    value = nil
+    @args_to_yield.each do |args|
+      if block.arity > -1 && args.length != block.arity
+        @error_generator.raise_wrong_arity_error args, block.arity
+      end
+      value = @eval_context ? @eval_context.instance_exec(*args, &block) : block.call(*args)
+    end
+    value
+  end
+
   def clear_method!
     @hooked = false
     @original_method = @arity_range = @method_visibility = nil
@@ -127,67 +153,76 @@ class Spy
 
   def method_visibility
     @method_visibility ||=
-        if base_object.respond_to?(method_name)
-          if original_method && original_method.owner.protected_method_defined?(method_name)
-            :protected
-          else
-            :public
-          end
-        elsif base_object.respond_to?(method_name, true)
-          :private
+      if base_object.respond_to?(method_name)
+        if original_method && original_method.owner.protected_method_defined?(method_name)
+          :protected
+        else
+          :public
         end
-  end
-
-  def check_arity!(arity)
-    return unless arity_range
-    if arity < arity_range.min
-      raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.min})")
-    elsif arity > arity_range.max
-      raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
-    end
-  end
-
-  def arity_range
-    @arity_range ||=
-      if original_method
-        min = max = 0
-        original_method.parameters.each do |type,_|
-          case type
-          when :req
-            min += 1
-            max += 1
-          when :opt
-            max += 1
-          when :rest
-            max = Float::INFINITY
-          end
-        end
-        (min..max)
+      elsif base_object.respond_to?(method_name, true)
+        :private
       end
   end
 
+  def check_arity!(arity)
+    self.class.check_arity_against_range!(arity_range, arity)
+  end
+
+  def arity_range
+    @arity_range ||= self.class.arity_range_of(original_method) if original_method
+  end
+
   class << self
+    def arity_range_of(block)
+      raise "#{block.inspect} does not respond to :parameters" unless block.respond_to?(:parameters)
+      min = max = 0
+      block.parameters.each do |type,_|
+        case type
+        when :req
+          min += 1
+          max += 1
+        when :opt
+          max += 1
+        when :rest
+          max = Float::INFINITY
+        end
+      end
+      (min..max)
+    end
+
+    def check_arity_against_range!(arity_range, arity)
+      return unless arity_range
+      if arity < arity_range.min
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.min})")
+      elsif arity > arity_range.max
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
+      end
+    end
     # create a spy on given object
     # @params base_object
-    # @params method_names *[Symbol] will spy on these methods
-    # @params method_names [Hash] will spy on these methods and also set default return values
+    # @params *method_names [Symbol] will spy on these methods
+    # @params *method_names [Hash] will spy on these methods and also set default return values
     # @return [Spy, Array<Spy>]
     def on(base_object, *method_names)
       spies = method_names.map do |method_name|
         create_and_hook_spy(base_object, method_name)
       end.flatten
 
-      spies.size > 1 ? spies : spies.first
+      method_names.size > 1 ? spies : spies.first
     end
 
-    # removes the spy from the
+    # removes the spy from the from the given object
+    # @params base_object
+    # @params *method_names
+    # @return [Spy, Array<Spy>]
     def off(base_object, *method_names)
       removed_spies = method_names.map do |method_name|
-        unhook_and_remove_spy(base_object, method_name)
+        spies = unhook_and_remove_spy(base_object, method_name)
+        raise "No spies found for #{method_name} on #{base_object.inspect}" if spies.empty?
+        spies
       end.flatten
 
-      raise "No spies found" if removed_spies.empty?
-      removed_spies.size > 1 ? removed_spies : removed_spies.first
+      method_names.size > 1 ? removed_spies : removed_spies.first
     end
 
     # get all hooked methods
@@ -222,7 +257,7 @@ class Spy
         end
       end
 
-      spies.size > 1 ? spies : spies.first
+      method_names.size > 1 ? spies : spies.first
     end
 
     private
@@ -230,21 +265,19 @@ class Spy
     def create_and_hook_spy(base_object, method_name, opts = {})
       case method_name
       when String, Symbol
-        spy = new(base_object, method_name).hook(opts)
-        all << spy
-        spy
+        new(base_object, method_name).hook(opts)
       when Hash
         method_name.map do |name, result|
           create_and_hook_spy(base_object, name, opts).and_return(result)
         end
       else
-        raise ArgumentError.new "#{method_name.class} is an invalid class, #on only accepts String, Symbol, and Hash"
+        raise ArgumentError.new "#{method_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"
       end
     end
 
     def unhook_and_remove_spy(base_object, method_name)
       removed_spies = []
-      all.delete_if do |spy|
+      all.each do |spy|
         if spy.base_object == base_object && spy.method_name == method_name
           removed_spies << spy.unhook
         end

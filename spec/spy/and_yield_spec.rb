@@ -1,8 +1,13 @@
 require 'spec_helper'
 
-describe RSpec::Mocks::Mock do
+describe "Spy" do
 
-  let(:obj) { double }
+  class Foo
+    def method_that_accepts_a_block(&block)
+    end
+  end
+
+  let(:obj) { Foo.new }
 
   describe "#and_yield" do
     context "with eval context as block argument" do
@@ -40,30 +45,32 @@ describe RSpec::Mocks::Mock do
 
         it "passes when expectations set on the eval context are met" do
           configured_eval_context = nil
+          context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
             configured_eval_context = eval_context
-            configured_eval_context.should_receive(:foo)
+            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do
             foo
           end
 
-          configured_eval_context.rspec_verify
+          expect(context_foo_spy).to have_been_called
         end
 
         it "fails when expectations set on the eval context are not met" do
           configured_eval_context = nil
+          context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
             configured_eval_context = eval_context
-            configured_eval_context.should_receive(:foo)
+            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do
             # foo is not called here
           end
 
-          expect { configured_eval_context.rspec_verify }.to raise_error(RSpec::Mocks::MockExpectationError)
+          expect(context_foo_spy).to_not have_been_called
         end
 
       end
@@ -73,10 +80,11 @@ describe RSpec::Mocks::Mock do
         it "passes when expectations set on the eval context and yielded arguments are met" do
           configured_eval_context = nil
           yielded_arg = Object.new
+          context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
             configured_eval_context = eval_context
-            configured_eval_context.should_receive(:foo)
-            yielded_arg.should_receive(:bar)
+            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
+            Spy.new(yielded_arg, :bar).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do |obj|
@@ -84,17 +92,18 @@ describe RSpec::Mocks::Mock do
             foo
           end
 
-          configured_eval_context.rspec_verify
-          yielded_arg.rspec_verify
+          expect(context_foo_spy).to have_been_called
+          expect(Spy.get(yielded_arg, :bar)).to have_been_called
         end
 
         it "fails when expectations set on the eval context and yielded arguments are not met" do
           configured_eval_context = nil
           yielded_arg = Object.new
+          context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
             configured_eval_context = eval_context
-            configured_eval_context.should_receive(:foo)
-            yielded_arg.should_receive(:bar)
+            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
+            Spy.new(yielded_arg, :bar).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do |obj|
@@ -102,8 +111,8 @@ describe RSpec::Mocks::Mock do
             # foo is not called here
           end
 
-          expect { configured_eval_context.rspec_verify }.to raise_error(RSpec::Mocks::MockExpectationError)
-          expect { yielded_arg.rspec_verify }.to raise_error(RSpec::Mocks::MockExpectationError)
+          expect(context_foo_spy).to_not have_been_called
+          expect(Spy.get(yielded_arg, :bar)).to_not have_been_called
         end
 
       end
