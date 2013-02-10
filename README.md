@@ -62,7 +62,7 @@ person = Person.new
 
 first_name_spy = Spy.on(person, :first_name)
 person.first_name            #=> nil
-first_name_spy.called?       #=> true
+first_name_spy.has_been_called?       #=> true
 
 Spy.get(person, :first_name) #=> first_name_spy
 
@@ -82,7 +82,8 @@ person.say("hello") {
 }
 say_spy.say("world")
 
-say_spy.called_with?("hello") #=> true
+say_spy.has_been_called? #=> true
+say_spy.has_been_called_with?("hello") #=> true
 say_spy.calls.count               #=> 1
 say_spy.calls.first.args          #=> ["hello"]
 say_spy.calls.last.args           #=> ["world"]
