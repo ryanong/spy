@@ -253,7 +253,7 @@ class Spy
     # @method_names *[Symbol, Hash]
     def get(base_object, *method_names)
       spies = method_names.map do |method_name|
-        if base_object.singleton_methods.include?(method_name.to_sym) && base_object.method(method_name).parameters == SPY_METHOD_PARAMS
+        if (base_object.singleton_methods + base_object.singleton_class.private_instance_methods(false)).include?(method_name.to_sym) && base_object.method(method_name).parameters == SPY_METHOD_PARAMS
           base_object.send(method_name, SECRET_SPY_KEY)
         end
       end
