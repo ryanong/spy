@@ -1,4 +1,6 @@
-require "rspec/autorun"
+require "rspec/core"
+require "rspec/matchers"
+require "rspec/expectations"
 require "spy"
 require "pry"
 require "pry-nav"
@@ -16,7 +18,7 @@ RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true
   config.filter_run_including :focus
   config.filter_run_excluding :broken => true
-
+  config.mock_with :absolutely_nothing
 
   config.expect_with :rspec do |expectations|
     expectations.syntax = :expect

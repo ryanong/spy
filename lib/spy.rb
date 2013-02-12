@@ -1,12 +1,13 @@
 require "spy/version"
 require "spy/double"
 require "spy/dsl"
+require "spy/core_ext/marshal"
 
 class Spy
   SECRET_SPY_KEY = Object.new
   CallLog = Struct.new(:object, :args, :block)
 
-  attr_reader :base_object, :method_name, :calls, :original_method
+  attr_reader :base_object, :method_name, :calls, :original_method, :opts
   def initialize(object, method_name)
     @was_hooked = false
     @base_object, @method_name = object, method_name
@@ -17,8 +18,8 @@ class Spy
   # @param opts [Hash{force => false, visibility => nil}] set :force => true if you want it to ignore if the method exists, or visibility to [:public, :protected, :private] to overwride current visibility
   # @return self
   def hook(opts = {})
-    raise "#{method_name} method has already been hooked" if hooked?
-    raise "#{base_object} method '#{method_name}' has already been hooked" if self.class.get(base_object, method_name)
+    @opts = opts
+    raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
     opts[:force] ||= base_object.is_a?(Double)
     if base_object.respond_to?(method_name, true) || !opts[:force]
       @original_method = base_object.method(method_name)
@@ -42,7 +43,7 @@ class Spy
     base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
 
     self.class.all << self
-    @hooked = @was_hooked = true
+    @was_hooked = true
     self
   end
 
@@ -63,9 +64,8 @@ class Spy
   # is the spy hooked?
   # @return Boolean
   def hooked?
-    @hooked
+    self == self.class.get(base_object, method_name)
   end
-
 
   # sets the return value of given spied method
   # @params return value
@@ -148,7 +148,7 @@ class Spy
 
   def clear_method!
     @hooked = false
-    @original_method = @arity_range = @method_visibility = nil
+    @opts = @original_method = @arity_range = @method_visibility = nil
   end
 
   def method_visibility
@@ -253,12 +253,22 @@ class Spy
     # @method_names *[Symbol, Hash]
     def get(base_object, *method_names)
       spies = method_names.map do |method_name|
-        if base_object.singleton_methods.include?(method_name.to_sym) && base_object.method(method_name).parameters == [[:rest, :__spy_args], [:block, :block]]
+        if base_object.singleton_methods.include?(method_name.to_sym) && base_object.method(method_name).parameters == SPY_METHOD_PARAMS
           base_object.send(method_name, SECRET_SPY_KEY)
         end
       end
 
       spies.size > 1 ? spies : spies.first
+    end
+
+    SPY_METHOD_PARAMS = [[:rest, :__spy_args], [:block, :block]]
+
+    def get_spies(base_object)
+      base_object.singleton_methods.map do |method_name|
+        if base_object.method(method_name).parameters == SPY_METHOD_PARAMS
+          base_object.send(method_name, SECRET_SPY_KEY)
+        end
+      end.compact
     end
 
     private
