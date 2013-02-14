@@ -1,4 +1,4 @@
-class Spy
+module Spy
   module Dsl
     def spy
       Spy

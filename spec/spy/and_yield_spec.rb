@@ -48,7 +48,7 @@ describe "Spy" do
           context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
             configured_eval_context = eval_context
-            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
+            context_foo_spy = Spy::Subroutine.new(configured_eval_context, :foo).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do
@@ -63,7 +63,7 @@ describe "Spy" do
           context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield do |eval_context|
             configured_eval_context = eval_context
-            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
+            context_foo_spy = Spy::Subroutine.new(configured_eval_context, :foo).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do
@@ -83,8 +83,8 @@ describe "Spy" do
           context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
             configured_eval_context = eval_context
-            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
-            Spy.new(yielded_arg, :bar).hook(force: true)
+            context_foo_spy = Spy::Subroutine.new(configured_eval_context, :foo).hook(force: true)
+            Spy::Subroutine.new(yielded_arg, :bar).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do |obj|
@@ -102,8 +102,8 @@ describe "Spy" do
           context_foo_spy = nil
           Spy.on(obj, :method_that_accepts_a_block).and_yield(yielded_arg) do |eval_context|
             configured_eval_context = eval_context
-            context_foo_spy = Spy.new(configured_eval_context, :foo).hook(force: true)
-            Spy.new(yielded_arg, :bar).hook(force: true)
+            context_foo_spy = Spy::Subroutine.new(configured_eval_context, :foo).hook(force: true)
+            Spy::Subroutine.new(yielded_arg, :bar).hook(force: true)
           end
 
           obj.method_that_accepts_a_block do |obj|

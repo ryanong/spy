@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class Spy
+module Spy
   class TestDouble < MiniTest::Unit::TestCase
     def test_double_creation
       double = Double.new("NewDouble", :meth_1, :meth_2)

@@ -1,23 +1,47 @@
 # Spy
 
-Spy is a lightweight doubles framework that won't let your code mock your intelligence.
+Spy is a lightweight stubbing framework that won't let your code mock your intelligence.
+
+Spy was designed for 1.9.3+ so there is no legacy tech debt.
+
+Spy features that were completed were tested against the rspec-mocks tests so it covers all cases that rspec-mocks does.
 
 Inspired by the spy api of the jasmine javascript testing framework.
 
 ## Why use this instead of rspec-mocks, mocha, or etc
 
-* Raise error when you try to stub/spy a method that doesn't exist
+* Spy will raise error when you try to stub/spy a method that doesn't exist
   * when you change your method name your unit tests will break
+  * no more fantasy tests
 * Spy arity matches original method
   * Your tests will raise an error if you use the wrong arity
 * Spy visibility matches original method
   * Your tests will raise an error if you try to call the method incorrectly
 * Simple call log api
   * easier to read tests
-  * less need to look at test framework documentation
+  * use ruby to test ruby instead of a dsl
 * no expectations
   * really who thought that was a good idea?
-* absolutely no polution of global object space unless you want to
+* absolutely no polution of global object space
+* no polution of instance variables for stubbed objects
+
+Fail faster, code faster.
+
+## Why not to use this
+
+* Api is not stable
+* missing these features
+  * Spy::Method#and\_raise
+  * Spy::Method#with
+    * this kind of mocking seems like a smell
+  * Spy::Constants
+  * Spy.on\_any\_instance\_of
+    * this kind of mocking seems like a smell
+  * argument matchers for Spy::Method#has\_been\_called\_with
+  * watch all calls to an object to check order in which they are called?
+    * is this useful?
+  * fail lazily on method call not on hook to allow for dynamic method creation?
+    * do more than 0.5% of develoeprs use this?
 
 ## Installation
 

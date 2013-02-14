@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class Spy
+module Spy
   describe "Hash including matchers", broken: true do
 
     it "describes itself properly" do

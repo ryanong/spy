@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class Spy
+module Spy
   describe "Matchers", :broken do
     before(:each) do
       @double = double('double')

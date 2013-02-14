@@ -133,7 +133,7 @@ describe "and_call_through" do
       end
 
       it 'raises an error on invocation if method_missing does not handle the message' do
-        Spy.new(instance, :not_a_handled_message).hook(force: true).and_call_through
+        Spy::Subroutine.new(instance, :not_a_handled_message).hook(force: true).and_call_through
 
         # Note: it should raise a NoMethodError (and usually does), but
         # due to a weird rspec-expectations issue (see #183) it sometimes

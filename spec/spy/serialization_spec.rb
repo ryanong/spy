@@ -3,7 +3,7 @@ require 'yaml'
 require 'psych'
 require 'syck'
 
-class Spy
+module Spy
   describe "serialization" do
 
     class SerializableObject < Struct.new(:foo, :bar); end
@@ -54,7 +54,7 @@ class Spy
     let(:serializable_object) { SerializableObject.new(7, "something") }
 
     def set_spy
-      Spy.new(serializable_object, :bazz).hook(force: true).and_return(5)
+      Spy::Subroutine.new(serializable_object, :bazz).hook(force: true).and_return(5)
     end
 
     shared_examples_for 'normal YAML serialization' do

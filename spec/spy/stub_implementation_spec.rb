@@ -1,28 +1,31 @@
 require 'spec_helper'
 
-module RSpec
-  module Mocks
+module Spy
+  describe Subroutine do
+    class Bar
+      def foo(given = nil)
+      end
+    end
+
+    let(:obj) { Bar.new }
     describe "stub implementation" do
       describe "with no args" do
         it "execs the block when called" do
-          obj = stub()
-          Spy.stub(obj, :foo).and_return { :bar }
+          Subroutine.new(obj, :foo).hook.and_return { :bar }
           expect(obj.foo).to eq :bar
         end
       end
 
       describe "with one arg" do
         it "execs the block with that arg when called" do
-          obj = stub()
-          Spy.stub(obj, :foo).and_return {|given| given}
+          Subroutine.new(obj, :foo).hook.and_return {|given| given}
           expect(obj.foo(:bar)).to eq :bar
         end
       end
 
       describe "with variable args" do
         it "execs the block when called" do
-          obj = stub()
-          Spy.stub(obj, :foo).and_return {|*given| given.first}
+          Subroutine.new(obj, :foo).hook.and_return {|*given| given.first}
           expect(obj.foo(:bar)).to eq :bar
         end
       end
@@ -33,8 +36,7 @@ module RSpec
       it "replaces the stubbed method with the original method" do
         obj = Object.new
         def obj.foo; :original; end
-        Spy.stub(obj, :foo)
-        Spy.off(obj, :foo)
+        Subroutine.new(obj, :foo).hook.unhook
         expect(obj.foo).to eq :original
       end
 
@@ -42,8 +44,8 @@ module RSpec
         parent = Class.new
         child  = Class.new(parent)
 
-        Spy.stub(parent, :new)
-        Spy.stub(child, :new)
+        Spy.on(parent, :new)
+        Spy.on(child, :new)
         Spy.off(parent, :new)
         Spy.off(child, :new)
 

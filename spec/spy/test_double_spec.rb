@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-class Spy
+module Spy
   describe Double do
     before(:all) do
       Module.class_eval do

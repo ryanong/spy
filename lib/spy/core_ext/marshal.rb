@@ -2,7 +2,7 @@ module Marshal
   class << self
     def dump_with_mocks(*args)
       object = args.shift
-      spies = Spy.get_spies(object)
+      spies = Spy::Subroutine.get_spies(object)
       if spies.empty?
         return dump_without_mocks(*args.unshift(object))
       end

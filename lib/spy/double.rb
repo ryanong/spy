@@ -1,4 +1,4 @@
-class Spy
+module Spy
   class Double
     def initialize(name, *args)
       @name = name

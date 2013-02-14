@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-class Spy
+module Spy
   describe "using a Partial Mock," do
 
     def stub(object, method_name)
-      Spy.new(object, method_name).hook(force: true)
+      Spy::Subroutine.new(object, method_name).hook(force: true)
     end
 
     let(:object) { Object.new }
@@ -92,55 +92,6 @@ class Spy
       expect {
         klass.bar(2)
       }.to raise_error(RSpec::Mocks::MockExpectationError, /MyClass/)
-    end
-  end
-
-  describe "Using a partial mock on a proxy object", :if => defined?(::BasicObject) do
-    let(:proxy_class) do
-      Class.new(::BasicObject) do
-        def initialize(target)
-          @target = target
-        end
-
-        def proxied?
-          true
-        end
-
-        def method_missing(*a)
-          @target.send(*a)
-        end
-      end
-    end
-
-    let(:instance) { proxy_class.new(Object.new) }
-
-    it 'works properly' do
-      instance.should_receive(:proxied?).and_return(false)
-      expect(instance).not_to be_proxied
-    end
-  end
-
-  describe "Partially mocking an object that defines ==, after another mock has been defined" do
-    before(:each) do
-      stub("existing mock", :foo => :foo)
-    end
-
-    let(:klass) do
-      Class.new do
-        attr_reader :val
-        def initialize(val)
-          @val = val
-        end
-
-        def ==(other)
-          @val == other.val
-        end
-      end
-    end
-
-    it "does not raise an error when stubbing the object" do
-      o = klass.new :foo
-      expect { Spy.on(o, :bar) }.not_to raise_error(NoMethodError)
     end
   end
 
