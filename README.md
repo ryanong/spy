@@ -31,11 +31,7 @@ Fail faster, code faster.
 
 * Api is not stable
 * missing these features
-  * Spy::Subroutine#and\_raise
-  * Spy::Subroutine#with
-    * this kind of mocking seems like a smell
-  * Spy.on\_any\_instance\_of
-    * this kind of mocking seems like a smell
+  * Mocking null objects
   * argument matchers for Spy::Method#has\_been\_called\_with
   * watch all calls to an object to check order in which they are called?
     * is this useful?

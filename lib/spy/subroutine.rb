@@ -94,6 +94,19 @@ module Spy
       self
     end
 
+    def and_raise(exception = RuntimeError, message = nil)
+      if exception.respond_to?(:exception)
+        exception = message ? exception.exception(message) : exception.exception
+      end
+
+      @plan = Proc.new { raise exception }
+    end
+
+    def and_throw(*args)
+      @plan = Proc.new { throw(*args) }
+      self
+    end
+
     def has_been_called?
       raise "was never hooked" unless @was_hooked
       calls.size > 0
