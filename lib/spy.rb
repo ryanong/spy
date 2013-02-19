@@ -41,10 +41,14 @@ module Spy
     end
 
     def on_const(base_module, *constant_names)
+      if base_module.is_a? Symbol
+        constant_names.unshift(base_module)
+        base_module = Object
+      end
       spies = constant_names.map do |constant_name|
         case constant_name
         when String, Symbol
-          Constant.new(base_module, constant_name).hook
+          Constant.on(base_module, constant_name)
         when Hash
           constant_name.map do |name, result|
             on_const(base_module, name).and_return(result)
@@ -61,7 +65,7 @@ module Spy
       spies = constant_names.map do |constant_name|
         case constant_name
         when String, Symbol
-          Constant.new(base_module, constant_name).hook
+          Constant.off(base_module, constant_name)
         when Hash
           constant_name.map do |name, result|
             off_const(base_module, name).and_return(result)
@@ -90,6 +94,14 @@ module Spy
     def get(base_object, *method_names)
       spies = method_names.map do |method_name|
         Subroutine.get(base_object, method_name)
+      end
+
+      spies.size > 1 ? spies : spies.first
+    end
+
+    def get_const(base_module, *constant_names)
+      spies = constant_names.map do |method_name|
+        Constant.get(base_module, constant_name)
       end
 
       spies.size > 1 ? spies : spies.first

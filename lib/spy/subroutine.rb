@@ -21,10 +21,6 @@ module Spy
 
       opts[:visibility] ||= method_visibility
 
-      if original_method && original_method.owner == base_object.singleton_class
-        base_object.singleton_class.send(:remove_method, method_name)
-      end
-
       __method_spy__ = self
       base_object.define_singleton_method(method_name) do |*__spy_args, &block|
         if __spy_args.first === SECRET_SPY_KEY
@@ -45,13 +41,14 @@ module Spy
     # @return self
     def unhook
       raise "#{method_name} method has not been hooked" unless hooked?
-      base_object.singleton_class.send(:remove_method, method_name)
       if original_method && original_method.owner == base_object.singleton_class
         base_object.define_singleton_method(method_name, original_method)
         base_object.singleton_class.send(method_visibility, method_name) if method_visibility
+      else
+        base_object.singleton_class.send(:remove_method, method_name)
       end
       clear_method!
-      Agency.instance.burn(self)
+      Agency.instance.retire(self)
       self
     end
 

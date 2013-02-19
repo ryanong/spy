@@ -16,8 +16,32 @@ class TestSubClass < TestClass
   P = :p
 end
 
+require "rspec/mocks/mutate_const"
+
 module Spy
-  describe "Constant Mutating", :broken do
+  describe "Constant Mutating" do
+
+    require "rspec/mocks/mutate_const"
+    include RSpec::Mocks::RecursiveConstMethods
+
+    def reset_rspec_mocks
+      Spy.teardown
+    end
+
+    def on_const(const_name)
+      parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
+      Spy.on_const(parent_const, const_name.split('::').last.to_sym)
+    end
+
+    def stub_const(const_name, value)
+      on_const(const_name).and_return(value)
+      value
+    end
+
+    def hide_const(const_name)
+      on_const(const_name).and_hide
+    end
+
     shared_context "constant example methods" do |const_name|
       define_method :const do
         recursive_const_get(const_name)
@@ -45,20 +69,20 @@ module Spy
 
       it 'allows it to be stubbed' do
         expect(const).not_to eq(7)
-        Spy.on_const(const_name).and_return(7)
+        stub_const(const_name, 7)
         expect(const).to eq(7)
       end
 
       it 'resets it to its original value when rspec clears its mocks' do
         original_value = const
         expect(original_value).not_to eq(:a)
-        Spy.on_const(const_name).and_return(:a)
+        stub_const(const_name, :a)
         reset_rspec_mocks
         expect(const).to be(original_value)
       end
 
       it 'returns the stubbed value' do
-        expect(Spy.on_const(const_name).and_return(7)).to eq(7)
+        expect(stub_const(const_name, 7)).to eq(7)
       end
     end
 
@@ -91,23 +115,23 @@ module Spy
       end
 
       it 'allows it to be stubbed' do
-        Spy.on_const(const_name).and_return(7)
+        stub_const(const_name, 7)
         expect(const).to eq(7)
       end
 
       it 'removes the constant when rspec clears its mocks' do
-        Spy.on_const(const_name).and_return(7)
+        stub_const(const_name, 7)
         reset_rspec_mocks
         expect(recursive_const_defined?(const_name)).to be_false
       end
 
       it 'returns the stubbed value' do
-        expect(Spy.on_const(const_name).and_return(7)).to eq(7)
+        expect(stub_const(const_name, 7)).to eq(7)
       end
 
       it 'ignores the :transfer_nested_constants option if passed' do
         stub = Module.new
-        Spy.on_const(const_name).and_return(stub, :transfer_nested_constants => true)
+        stub_const(const_name, stub, :transfer_nested_constants => true)
         expect(stub.constants).to eq([])
       end
     end
@@ -189,7 +213,7 @@ module Spy
         hide_const("TOP_LEVEL_VALUE_CONST")
         expect(recursive_const_defined?("TOP_LEVEL_VALUE_CONST")).to be_false
 
-        Spy.on_const("TOP_LEVEL_VALUE_CONST").and_return(12345)
+        stub_const("TOP_LEVEL_VALUE_CONST", 12345)
         expect(TOP_LEVEL_VALUE_CONST).to eq 12345
 
         reset_rspec_mocks
@@ -204,8 +228,8 @@ module Spy
         it 'can be stubbed multiple times but still restores the original value properly' do
           orig_value = TestClass
           stub1, stub2 = Module.new, Module.new
-          Spy.on_const("TestClass").and_return(stub1)
-          Spy.on_const("TestClass").and_return(stub2)
+          stub_const("TestClass", stub1)
+          stub_const("TestClass", stub2)
 
           reset_rspec_mocks
           expect(TestClass).to be(orig_value)
@@ -214,7 +238,7 @@ module Spy
         it 'allows nested constants to be transferred to a stub module' do
           tc_nested = TestClass::Nested
           stub = Module.new
-          Spy.on_const("TestClass", stub).and_return(:transfer_nested_constants => true)
+          stub_const("TestClass", stub, :transfer_nested_constants => true)
           expect(stub::M).to eq(:m)
           expect(stub::N).to eq(:n)
           expect(stub::Nested).to be(tc_nested)
@@ -222,7 +246,7 @@ module Spy
 
         it 'does not transfer nested constants that are inherited from a superclass' do
           stub = Module.new
-          Spy.on_const("TestSubClass", stub).and_return(:transfer_nested_constants => true)
+          stub_const("TestSubClass", stub, :transfer_nested_constants => true)
           expect(stub::P).to eq(:p)
           expect(defined?(stub::M)).to be_false
           expect(defined?(stub::N)).to be_false
@@ -232,16 +256,15 @@ module Spy
           original_tsc = TestSubClass
 
           expect {
-            Spy.on_const("TestSubClass", Module.new).and_return(:transfer_nested_constants => [:M])
+            stub_const("TestSubClass", Module.new, :transfer_nested_constants => [:M])
           }.to raise_error(ArgumentError)
 
           expect(TestSubClass).to be(original_tsc)
         end
 
-        it 'allows nested constants to be selectively transferred to a stub module', broken: true do
+        it 'allows nested constants to be selectively transferred to a stub module' do
           stub = Module.new
-          #TODO
-          Spy.on_const("TestClass", stub, :transfer_nested_constants => [:M, :N])
+          stub_const("TestClass", stub, :transfer_nested_constants => [:M, :N])
           expect(stub::M).to eq(:m)
           expect(stub::N).to eq(:n)
           expect(defined?(stub::Nested)).to be_false
@@ -251,13 +274,13 @@ module Spy
           original_tc = TestClass
           stub = Object.new
           expect {
-            Spy.on_const("TestClass", stub).and_return(:transfer_nested_constants => true)
+            stub_const("TestClass", stub, :transfer_nested_constants => true)
           }.to raise_error(ArgumentError)
 
           expect(TestClass).to be(original_tc)
 
           expect {
-            Spy.on_const("TestClass", stub).and_return(:transfer_nested_constants => [:M])
+            stub_const("TestClass", stub, :transfer_nested_constants => [:M])
           }.to raise_error(ArgumentError)
 
           expect(TestClass).to be(original_tc)
@@ -266,13 +289,13 @@ module Spy
         it 'raises an error if asked to transfer nested constants on a constant that does not support nested constants' do
           stub = Module.new
           expect {
-            Spy.on_const("TOP_LEVEL_VALUE_CONST", stub).and_return(:transfer_nested_constants => true)
+            stub_const("TOP_LEVEL_VALUE_CONST", stub, :transfer_nested_constants => true)
           }.to raise_error(ArgumentError)
 
           expect(TOP_LEVEL_VALUE_CONST).to eq(7)
 
           expect {
-            Spy.on_const("TOP_LEVEL_VALUE_CONST", stub).and_return(:transfer_nested_constants => [:M])
+            stub_const("TOP_LEVEL_VALUE_CONST", stub, :transfer_nested_constants => [:M])
           }.to raise_error(ArgumentError)
 
           expect(TOP_LEVEL_VALUE_CONST).to eq(7)
@@ -284,7 +307,7 @@ module Spy
           stub = Module.new
 
           expect {
-            Spy.on_const("TestClass", stub).and_return(:transfer_nested_constants => [:V])
+            stub_const("TestClass", stub, :transfer_nested_constants => [:V])
           }.to raise_error(/cannot transfer nested constant.*V/i)
 
           expect(TestClass).to be(original_tc)
@@ -320,7 +343,7 @@ module Spy
 
         it 'removes the root constant when rspec clears its mocks' do
           expect(defined?(X)).to be_false
-          Spy.on_const("X::Y").and_return(7)
+          stub_const("X::Y", 7)
           reset_rspec_mocks
           expect(defined?(X)).to be_false
         end
@@ -331,7 +354,7 @@ module Spy
 
         it 'removes the root constant when rspec clears its mocks' do
           expect(defined?(X)).to be_false
-          Spy.on_const("X::Y::Z").and_return(7)
+          stub_const("X::Y::Z", 7)
           reset_rspec_mocks
           expect(defined?(X)).to be_false
         end
@@ -343,7 +366,7 @@ module Spy
         it 'removes the unloaded constant but leaves the loaded constant when rspec resets its mocks' do
           expect(defined?(TestClass)).to be_true
           expect(defined?(TestClass::X)).to be_false
-          Spy.on_const("TestClass::X").and_return(7)
+          stub_const("TestClass::X", 7)
           reset_rspec_mocks
           expect(defined?(TestClass)).to be_true
           expect(defined?(TestClass::X)).to be_false
@@ -351,7 +374,7 @@ module Spy
 
         it 'raises a helpful error if it cannot be stubbed due to an intermediary constant that is not a module' do
           expect(TestClass::M).to be_a(Symbol)
-          expect { Spy.on_const("TestClass::M::X").and_return(5) }.to raise_error(/cannot stub/i)
+          expect { stub_const("TestClass::M::X", 5) }.to raise_error(/cannot stub/i)
         end
       end
 
@@ -361,7 +384,7 @@ module Spy
         it 'removes the first unloaded constant but leaves the loaded nested constant when rspec resets its mocks' do
           expect(defined?(TestClass::Nested::NestedEvenMore)).to be_true
           expect(defined?(TestClass::Nested::NestedEvenMore::X)).to be_false
-          Spy.on_const("TestClass::Nested::NestedEvenMore::X::Y::Z").and_return(7)
+          stub_const("TestClass::Nested::NestedEvenMore::X::Y::Z", 7)
           reset_rspec_mocks
           expect(defined?(TestClass::Nested::NestedEvenMore)).to be_true
           expect(defined?(TestClass::Nested::NestedEvenMore::X)).to be_false
@@ -370,10 +393,35 @@ module Spy
     end
   end
 
-  describe "Constant" do
+  describe Constant do
+    require "rspec/mocks/mutate_const"
+    include RSpec::Mocks::RecursiveConstMethods
+
+    def reset_rspec_mocks
+      Spy.teardown
+    end
+
+    def on_const(const_name)
+      parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
+      Spy.on_const(parent_const, const_name.split('::').last.to_sym)
+    end
+
+    def stub_const(const_name, value)
+      on_const(const_name).and_return(value)
+    end
+
+    def hide_const(const_name)
+      on_const(const_name).and_hide
+    end
+
+    def original(const_name)
+      parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
+      Spy.get_const(parent_const, const_name.split('::').last.to_sym)
+    end
+
     describe ".original" do
       context 'for a previously defined unstubbed constant' do
-        let(:const) { Constant.original("TestClass::M") }
+        let(:const) { original("TestClass::M") }
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
@@ -384,8 +432,8 @@ module Spy
       end
 
       context 'for a previously defined stubbed constant' do
-        before { Spy.on_const("TestClass::M").and_return(:other) }
-        let(:const) { Constant.original("TestClass::M") }
+        before { stub_const("TestClass::M", :other) }
+        let(:const) { original("TestClass::M") }
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
@@ -396,8 +444,8 @@ module Spy
       end
 
       context 'for a previously undefined stubbed constant' do
-        before { Spy.on_const("TestClass::Undefined").and_return(:other) }
-        let(:const) { Constant.original("TestClass::Undefined") }
+        before { stub_const("TestClass::Undefined", :other) }
+        let(:const) { original("TestClass::Undefined") }
 
         it("exposes its name")                        { expect(const.name).to eq("TestClass::Undefined") }
         it("indicates it was not previously defined") { expect(const).not_to be_previously_defined }
@@ -408,7 +456,7 @@ module Spy
       end
 
       context 'for a previously undefined unstubbed constant' do
-        let(:const) { Constant.original("TestClass::Undefined") }
+        let(:const) { original("TestClass::Undefined") }
 
         it("exposes its name")                        { expect(const.name).to eq("TestClass::Undefined") }
         it("indicates it was not previously defined") { expect(const).not_to be_previously_defined }
@@ -419,9 +467,9 @@ module Spy
       end
 
       context 'for a previously defined constant that has been stubbed twice' do
-        before { Spy.on_const("TestClass::M").and_return(1) }
-        before { Spy.on_const("TestClass::M").and_return(2) }
-        let(:const) { Constant.original("TestClass::M") }
+        before { stub_const("TestClass::M", 1) }
+        before { stub_const("TestClass::M", 2) }
+        let(:const) { original("TestClass::M") }
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
@@ -432,9 +480,9 @@ module Spy
       end
 
       context 'for a previously undefined constant that has been stubbed twice' do
-        before { Spy.on_const("TestClass::Undefined").and_return(1) }
-        before { Spy.on_const("TestClass::Undefined").and_return(2) }
-        let(:const) { Constant.original("TestClass::Undefined") }
+        before { stub_const("TestClass::Undefined", 1) }
+        before { stub_const("TestClass::Undefined", 2) }
+        let(:const) { original("TestClass::Undefined") }
 
         it("exposes its name")                        { expect(const.name).to eq("TestClass::Undefined") }
         it("indicates it was not previously defined") { expect(const).not_to be_previously_defined }
@@ -446,7 +494,7 @@ module Spy
 
       context 'for a previously defined hidden constant' do
         before { hide_const("TestClass::M") }
-        let(:const) { Constant.original("TestClass::M") }
+        let(:const) { original("TestClass::M") }
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
@@ -459,7 +507,7 @@ module Spy
       context 'for a previously defined constant that has been hidden twice' do
         before { hide_const("TestClass::M") }
         before { hide_const("TestClass::M") }
-        let(:const) { Constant.original("TestClass::M") }
+        let(:const) { original("TestClass::M") }
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
@@ -471,4 +519,3 @@ module Spy
     end
   end
 end
-
