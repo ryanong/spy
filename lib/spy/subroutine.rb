@@ -1,7 +1,11 @@
 module Spy
   class Subroutine
-    CallLog = Struct.new(:object, :args, :block)
+    CallLog = Struct.new(:object, :args, :block, :result)
     attr_reader :base_object, :method_name, :calls, :original_method, :opts
+
+    # set what object and method the spy should watch
+    # @param object
+    # @param method_name <Symbol>
     def initialize(object, method_name)
       @was_hooked = false
       @base_object, @method_name = object, method_name
@@ -58,20 +62,32 @@ module Spy
       self == self.class.get(base_object, method_name)
     end
 
-    # sets the return value of given spied method
-    # @params return value
-    # @params return block
+    # @overload and_return(value)
+    # @overload and_return(&block)
+    #
+    # Tells the spy to return a value when the method is called.
+    #
     # @return self
-    def and_return(value = nil, &block)
+    def and_return(value = nil)
       if block_given?
-        raise ArgumentError.new("value and block conflict. Choose one") if !value.nil?
-        @plan = block
+        @plan = Proc.new
+        if value.nil? || value.is_a?(Hash) && value.has_key?(:force)
+          if !(value.is_a?(Hash) && value[:force]) &&
+              original_method &&
+              original_method.arity >=0 &&
+              @plan.arity > original_method.arity
+            raise ArgumentError.new "The original method only has an arity of #{original_method.arity} you have an arity of #{@plan.arity}"
+          end
+        else
+          raise ArgumentError.new("value and block conflict. Choose one") if !value.nil?
+        end
       else
         @plan = Proc.new { value }
       end
       self
     end
 
+    # Tells the object to yield one or more args to a block when the message is received.
     def and_yield(*args)
       yield eval_context = Object.new if block_given?
       @plan = Proc.new do |&block|
@@ -124,9 +140,9 @@ module Spy
     # method.
     def invoke(object, args, block)
       check_arity!(args.size)
-      calls << CallLog.new(object, args, block)
-      default_return_val = nil
-      @plan ? @plan.call(*args, &block) : default_return_val
+      result = @plan ? @plan.call(*args, &block) : nil
+      calls << CallLog.new(object, args, block, result)
+      result
     end
 
     # reset the call log
@@ -139,7 +155,7 @@ module Spy
     private
 
     def call_with_yield(&block)
-      raise "no block sent"  unless block
+      raise "no block sent" unless block
       value = nil
       @args_to_yield.each do |args|
         if block.arity > -1 && args.length != block.arity

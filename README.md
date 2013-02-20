@@ -1,8 +1,8 @@
 # Spy
 
-Spy is a lightweight stubbing framework that won't let your code mock your intelligence.
+Spy is a lightweight stubbing framework with support for method spies, constant stubs, and object doubles.
 
-Spy was designed for 1.9.3+ so there is no legacy tech debt.
+Spy was designed for 1.9.3+.
 
 Spy features that were completed were tested against the rspec-mocks tests so it covers all cases that rspec-mocks does.
 
@@ -33,10 +33,7 @@ Fail faster, code faster.
 * missing these features
   * Mocking null objects
   * argument matchers for Spy::Method#has\_been\_called\_with
-  * watch all calls to an object to check order in which they are called?
-    * is this useful?
-  * fail lazily on method call not on hook to allow for dynamic method creation?
-    * do more than 0.5% of develoeprs use this?
+  * watch all calls to an object to check order in which they are called
 
 ## Installation
 
@@ -54,64 +51,93 @@ Or install it yourself as:
 
 ## Usage
 
+### Method Stubs
+
+A method stub overrides a pre-existing method and records all calls to specified method. You can set the spy to return either the original method or your own custom implementation.
+
+Spy support 2 different ways of spying an existing method on an object.
 ```ruby
-class Person
-  def first_name
-    "John"
-  end
+Spy.on(book, title: "East of Eden")
+Spy.on(book, :title).and_return("East of Eden")
+Spy.on(book, :title).and_return { "East of Eden" }
+```
 
-  def last_name
-    "Smith"
-  end
+Spy will raise an error if you try to stub on a method that doesn't exist.
+You can force the creation of a sstub on method that didn't exist but it really isn't suggested.
 
-  def full_name
-    "#{first_name} #{last_name}"
-  end
+```ruby
+Spy.new(book, :flamethrower).hook(force:true).and_return("burnninante")
+```
 
-  def say(words)
-    puts words
-  end
+### Test Doubles
+
+A test double is an object that stands in for a real object.
+
+```ruby
+Spy.double("book")
+```
+
+Spy will let you stub on any method even if it doesn't exist if the object is a double.
+
+Spy comes with a shortcut to define an object with methods.
+
+```ruby
+Spy.double("book", title: "Grapes of Wrath", author: "John Steinbeck")
+```
+
+### Arbitrary Handling
+
+If you need to have a custom method based in the method inputs just send a block to #and\_return
+
+```ruby
+Spy.on(book, :read_page).and_return do |page, &block|
+  block.call
+  "awesome " * page
 end
 ```
 
-### Standalone
+An error will raise if the arity of the block is larger than the arity of the original method. However this can be overidden with the force argument.
 
 ```ruby
-person = Person.new
+Spy.on(book, :read_page).and_return(force: true) do |a, b, c, d|
+end
+```
 
-first_name_spy = Spy.on(person, :first_name)
-person.first_name            #=> nil
-first_name_spy.has_been_called?       #=> true
+### Method Spies
 
-Spy.get(person, :first_name) #=> first_name_spy
+When you stub a method it returns a spy. A spy records what calls have been made to a given method.
 
-Spy.off(person, :first_name)
-person.first_name          #=> "John"
+```ruby
+validator = Spy.double("validator")
+validate_spy = Spy.on(validator, :validate)
+validate_spy.has_been_called? #=> false
+validator.validate("01234")   #=> nil
+validate_spy.has_been_called? #=> true
+validate_spy.has_been_called_with?("01234) #=> true
+```
 
-first_name_spy.hook        #=> first_name_spy
-first_name_spy.and_return("Bob")
-person.first_name          #=> "Bob"
+### Calling through
+If you just want to make sure if a method is called and not override the output you can just use the and\_call\_through method
 
-Spy.teardown
-person.first_name #=> "John"
+```ruby
+Spy.on(book, :read_page).and_call_through
+```
 
-say_spy = Spy.on(person, :say)
-person.say("hello") {
-  "everything accepts a block in ruby"
-}
-say_spy.say("world")
+### Call Logs
 
-say_spy.has_been_called? #=> true
-say_spy.has_been_called_with?("hello") #=> true
-say_spy.calls.count               #=> 1
-say_spy.calls.first.args          #=> ["hello"]
-say_spy.calls.last.args           #=> ["world"]
+When a spy is called on it records a call log. A call log contains the object it was called on, the arguments and block that were sent to method and what it returned.
 
-call_log = say_spy.calls.first
-call_log.object     #=> #<Person:0x00000000b2b858>
-call_log.args       #=> ["hello"]
-call_log.block      #=> #<Proc:0x00000000b1a9e0>
-call_log.block.call #=> "everything accepts a block in ruby"
+```ruby
+read_page_spy = Spy.on(book, read_page: "hello world")
+book.read_page(5) { "this is a block" }
+book.read_page(3)
+book.read_page(7)
+read_page_spy.calls.size #=> 3
+first_call = read_page_spy.calls.first
+first_call.object #=> book
+first_call.args   #=> [5]
+first_call.block  #=> Proc.new { "this is a block" }
+first_call.result #=> "hello world"
 ```
 
 ### MiniTest

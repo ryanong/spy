@@ -2,7 +2,6 @@ require "spy/core_ext/marshal"
 require "spy/agency"
 require "spy/constant"
 require "spy/double"
-require "spy/dsl"
 require "spy/nest"
 require "spy/subroutine"
 require "spy/version"
@@ -11,10 +10,9 @@ module Spy
   SECRET_SPY_KEY = Object.new
   class << self
     # create a spy on given object
-    # @params base_object
-    # @params *method_names [Symbol] will spy on these methods
-    # @params *method_names [Hash] will spy on these methods and also set default return values
-    # @return [Spy, Array<Spy>]
+    # @param base_object
+    # @param method_names *[Hash,Symbol] will spy on these methods and also set default return values
+    # @return [Subroutine, Array<Subroutine>]
     def on(base_object, *method_names)
       spies = method_names.map do |method_name|
         create_and_hook_spy(base_object, method_name)
@@ -24,9 +22,9 @@ module Spy
     end
 
     # removes the spy from the from the given object
-    # @params base_object
-    # @params *method_names
-    # @return [Spy, Array<Spy>]
+    # @param base_object
+    # @param method_names *[Symbol]
+    # @return [Subroutine, Array<Subroutine>]
     def off(base_object, *method_names)
       removed_spies = method_names.map do |method_name|
         spy = Subroutine.get(base_object, method_name)
@@ -40,6 +38,10 @@ module Spy
       removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
+    # create a stub for constants on given module
+    # @param base_module [Module]
+    # @param constant_names *[Symbol, Hash]
+    # @return [Constant, Array<Constant>]
     def on_const(base_module, *constant_names)
       if base_module.is_a? Symbol
         constant_names.unshift(base_module)
@@ -61,6 +63,10 @@ module Spy
       spies.size > 1 ? spies : spies.first
     end
 
+    # removes stubs from given module
+    # @param base_module [Module]
+    # @param constant_names *[Symbol]
+    # @return [Constant, Array<Constant>]
     def off_const(base_module, *constant_names)
       spies = constant_names.map do |constant_name|
         case constant_name
@@ -83,14 +89,16 @@ module Spy
       Agency.instance.dissolve!
     end
 
-    # (see Double#new)
+    # returns a double
+    # (see Double#initizalize)
     def double(*args)
       Double.new(*args)
     end
 
     # retrieve the spy from an object
-    # @params base_object
-    # @method_names *[Symbol, Hash]
+    # @param base_object
+    # @param method_names *[Symbol]
+    # @return [Subroutine, Array<Subroutine>]
     def get(base_object, *method_names)
       spies = method_names.map do |method_name|
         Subroutine.get(base_object, method_name)
@@ -99,6 +107,10 @@ module Spy
       spies.size > 1 ? spies : spies.first
     end
 
+    # retrieve the constant spies from an object
+    # @param base_module
+    # @param constant_names *[Symbol]
+    # @return [Constant, Array<Constant>]
     def get_const(base_module, *constant_names)
       spies = constant_names.map do |method_name|
         Constant.get(base_module, constant_name)

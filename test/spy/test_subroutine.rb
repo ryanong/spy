@@ -67,12 +67,24 @@ module Spy
     def test_spy_and_return_can_call_a_block
       result = "hello world"
 
-      spy_on(@pen, :write).and_return do |string|
+      spy_on(@pen, :write).and_return {}.and_return do |string|
         string.reverse
       end
 
       assert_equal result.reverse, @pen.write(result)
       assert_empty @pen.written
+    end
+
+    def test_spy_and_return_can_call_a_block_raises_when_there_is_an_arity_mismatch
+      write_spy = spy_on(@pen, :write)
+      write_spy.and_return do |*args|
+      end
+      write_spy.and_return do |string, *args|
+      end
+      assert_raises ArgumentError do
+        write_spy.and_return do |string, b|
+        end
+      end
     end
 
     def test_spy_and_return_can_call_a_block_that_recieves_a_block
