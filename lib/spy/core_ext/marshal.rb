@@ -1,5 +1,6 @@
 module Marshal
   class << self
+    # @private
     def dump_with_mocks(*args)
       object = args.shift
       spies = Spy::Subroutine.get_spies(object)

@@ -8,6 +8,7 @@ require "spy/version"
 
 module Spy
   SECRET_SPY_KEY = Object.new
+  private_constant :SECRET_SPY_KEY
   class << self
     # create a spy on given object
     # @param base_object

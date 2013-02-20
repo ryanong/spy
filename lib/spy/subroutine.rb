@@ -1,7 +1,24 @@
 module Spy
   class Subroutine
     CallLog = Struct.new(:object, :args, :block, :result)
-    attr_reader :base_object, :method_name, :calls, :original_method, :opts
+
+    # @!attribute [r] base_object
+    #   @return [Object] the object that is being watched
+    #
+    # @!attribute [r] method_name
+    #   @return [Symbol] the name of the method that is being watched
+    #
+    # @!attribute [r] calls
+    #   @return [Array<CallLog>] the messages that have been sent to the method
+    #
+    # @!attribute [r] original_method
+    #   @return [Method] the original method that was hooked if it existed
+    #
+    # @!attribute [r] hook_opts
+    #   @return [Hash] the options that were sent when it was hooked
+
+
+    attr_reader :base_object, :method_name, :calls, :original_method, :hook_opts
 
     # set what object and method the spy should watch
     # @param object
@@ -14,16 +31,16 @@ module Spy
 
     # hooks the method into the object and stashes original method if it exists
     # @param opts [Hash{force => false, visibility => nil}] set :force => true if you want it to ignore if the method exists, or visibility to [:public, :protected, :private] to overwride current visibility
-    # @return self
+    # @return [self]
     def hook(opts = {})
-      @opts = opts
+      @hook_opts = opts
       raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
-      opts[:force] ||= base_object.is_a?(Double)
-      if base_object.respond_to?(method_name, true) || !opts[:force]
+      hook_opts[:force] ||= base_object.is_a?(Double)
+      if base_object.respond_to?(method_name, true) || !hook_opts[:force]
         @original_method = base_object.method(method_name)
       end
 
-      opts[:visibility] ||= method_visibility
+      hook_opts[:visibility] ||= method_visibility
 
       __method_spy__ = self
       base_object.define_singleton_method(method_name) do |*__spy_args, &block|
@@ -34,7 +51,7 @@ module Spy
         end
       end
 
-      base_object.singleton_class.send(opts[:visibility], method_name) if opts[:visibility]
+      base_object.singleton_class.send(hook_opts[:visibility], method_name) if hook_opts[:visibility]
 
       Agency.instance.recruit(self)
       @was_hooked = true
@@ -42,7 +59,7 @@ module Spy
     end
 
     # unhooks method from object
-    # @return self
+    # @return [self]
     def unhook
       raise "#{method_name} method has not been hooked" unless hooked?
       if original_method && original_method.owner == base_object.singleton_class
@@ -57,7 +74,7 @@ module Spy
     end
 
     # is the spy hooked?
-    # @return Boolean
+    # @return [Boolean]
     def hooked?
       self == self.class.get(base_object, method_name)
     end
@@ -67,7 +84,7 @@ module Spy
     #
     # Tells the spy to return a value when the method is called.
     #
-    # @return self
+    # @return [self]
     def and_return(value = nil)
       if block_given?
         @plan = Proc.new
@@ -88,6 +105,7 @@ module Spy
     end
 
     # Tells the object to yield one or more args to a block when the message is received.
+    # @return [self]
     def and_yield(*args)
       yield eval_context = Object.new if block_given?
       @plan = Proc.new do |&block|
@@ -97,7 +115,7 @@ module Spy
     end
 
     # tells the spy to call the original method
-    # @return self
+    # @return [self]
     def and_call_through
       raise "can only call through if original method is set" unless method_visibility
       if original_method
@@ -110,6 +128,22 @@ module Spy
       self
     end
 
+    # @overload and_raise
+    # @overload and_raise(ExceptionClass)
+    # @overload and_raise(ExceptionClass, message)
+    # @overload and_raise(exception_instance)
+    #
+    # Tells the object to raise an exception when the message is received.
+    #
+    # @note
+    #
+    #   When you pass an exception class, the MessageExpectation will raise
+    #   an instance of it, creating it with `exception` and passing `message`
+    #   if specified.  If the exception class initializer requires more than
+    #   one parameters, you must pass in an instance and not the class,
+    #   otherwise this method will raise an ArgumentError exception.
+    #
+    # @return [self]
     def and_raise(exception = RuntimeError, message = nil)
       if exception.respond_to?(:exception)
         exception = message ? exception.exception(message) : exception.exception
@@ -118,17 +152,28 @@ module Spy
       @plan = Proc.new { raise exception }
     end
 
+    # @overload and_throw(symbol)
+    # @overload and_throw(symbol, object)
+    #
+    # Tells the object to throw a symbol (with the object if that form is
+    # used) when the message is received.
+    #
+    # @return [self]
     def and_throw(*args)
       @plan = Proc.new { throw(*args) }
       self
     end
 
+    # if the method was called it will return true
+    # @return [Boolean]
     def has_been_called?
       raise "was never hooked" unless @was_hooked
       calls.size > 0
     end
 
     # check if the method was called with the exact arguments
+    # @param args Arguments that should have been sent to the method
+    # @return [Boolean]
     def has_been_called_with?(*args)
       raise "was never hooked" unless @was_hooked
       calls.any? do |call_log|
@@ -168,7 +213,7 @@ module Spy
 
     def clear_method!
       @hooked = false
-      @opts = @original_method = @arity_range = @method_visibility = nil
+      @hook_opts = @original_method = @arity_range = @method_visibility = nil
     end
 
     def method_visibility
@@ -193,6 +238,7 @@ module Spy
     end
 
     class << self
+      # @private
       def arity_range_of(block)
         raise "#{block.inspect} does not respond to :parameters" unless block.respond_to?(:parameters)
         min = max = 0
@@ -210,6 +256,7 @@ module Spy
         (min..max)
       end
 
+      # @private
       def check_arity_against_range!(arity_range, arity)
         return unless arity_range
         if arity < arity_range.min
@@ -220,6 +267,7 @@ module Spy
       end
 
       SPY_METHOD_PARAMS = [[:rest, :__spy_args], [:block, :block]]
+      private_constant :SPY_METHOD_PARAMS
 
       def get(base_object, method_name)
         if (base_object.singleton_methods + base_object.singleton_class.private_instance_methods(false)).include?(method_name.to_sym) && base_object.method(method_name).parameters == SPY_METHOD_PARAMS

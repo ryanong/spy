@@ -29,11 +29,10 @@ Fail faster, code faster.
 
 ## Why not to use this
 
-* Api is not stable
-* missing these features
-  * Mocking null objects
-  * argument matchers for Spy::Method#has\_been\_called\_with
-  * watch all calls to an object to check order in which they are called
+* mocking null objects is not supported
+* no argument matchers for Spy::Method#has\_been\_called\_with
+* cannot watch all calls to an object to check order in which they are called
+* needs more testing
 
 ## Installation
 
@@ -56,6 +55,7 @@ Or install it yourself as:
 A method stub overrides a pre-existing method and records all calls to specified method. You can set the spy to return either the original method or your own custom implementation.
 
 Spy support 2 different ways of spying an existing method on an object.
+
 ```ruby
 Spy.on(book, title: "East of Eden")
 Spy.on(book, :title).and_return("East of Eden")
