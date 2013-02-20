@@ -9,6 +9,7 @@ require "spy/version"
 module Spy
   SECRET_SPY_KEY = Object.new
   private_constant :SECRET_SPY_KEY
+
   class << self
     # create a spy on given object
     # @param base_object
@@ -113,7 +114,7 @@ module Spy
     # @param constant_names *[Symbol]
     # @return [Constant, Array<Constant>]
     def get_const(base_module, *constant_names)
-      spies = constant_names.map do |method_name|
+      spies = constant_names.map do |constant_name|
         Constant.get(base_module, constant_name)
       end
 

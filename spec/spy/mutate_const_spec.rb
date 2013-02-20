@@ -30,7 +30,7 @@ module Spy
 
     def on_const(const_name)
       parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
-      Spy.on_const(parent_const, const_name.split('::').last.to_sym)
+      Spy.get_const(parent_const, const_name.split('::').last.to_sym) || Spy.on_const(parent_const, const_name.split('::').last.to_sym)
     end
 
     def stub_const(const_name, value)
@@ -172,17 +172,9 @@ module Spy
         it_behaves_like "unloaded constant hiding", "TestClass::Hash"
 
         it 'does not hide the top-level constant' do
-          top_level_hash = ::Hash
-
-          hide_const("TestClass::Hash")
-          expect(::Hash).to equal(top_level_hash)
-        end
-
-        it 'does not affect the ability to access the top-level constant from nested contexts', :silence_warnings do
-          top_level_hash = ::Hash
-
-          hide_const("TestClass::Hash")
-          expect(TestClass::Hash).to equal(top_level_hash)
+          expect {
+            hide_const("TestClass::Hash")
+          }.to raise_error
         end
       end
 
@@ -403,7 +395,7 @@ module Spy
 
     def on_const(const_name)
       parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
-      Spy.on_const(parent_const, const_name.split('::').last.to_sym)
+      Spy.get_const(parent_const, const_name.split('::').last.to_sym) || Spy.on_const(parent_const, const_name.split('::').last.to_sym)
     end
 
     def stub_const(const_name, value)

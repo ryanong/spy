@@ -21,41 +21,45 @@ module Spy
       @base_module, @constant_name = base_module, constant_name.to_sym
       @original_value = nil
       @new_value = nil
-      @was_defined = nil
+      @previously_defined = nil
+    end
+
+    def name
+      "#{base_module.name}::#{constant_name}"
     end
 
     # stashes the original constant then overwrites it with nil
     # @param opts [Hash{force => false}] set :force => true if you want it to ignore if the constant exists
     # @return [self]
     def hook(opts = {})
+      Nest.fetch(base_module).add(self)
+      Agency.instance.recruit(self)
       opts[:force] ||= false
-      @was_defined = base_module.const_defined?(constant_name, false)
-      if @was_defined || !opts[:force]
+      @previously_defined = currently_defined?
+      if @previously_defined || !opts[:force]
         @original_value = base_module.const_get(constant_name, false)
       end
       and_return(@new_value)
-      Nest.fetch(base_module).add(self)
-      Agency.instance.recruit(self)
       self
     end
 
     # restores the original value of the constant or unsets it if it was unset
     # @return [self]
     def unhook
-      if @was_defined
+      Nest.fetch(base_module).remove(self)
+      Agency.instance.retire(self)
+
+      if @previously_defined
         and_return(@original_value)
       end
       @original_value = nil
-
-      Agency.instance.retire(self)
-      Nest.fetch(base_module).remove(self)
       self
     end
 
     # unsets the constant
     # @return [self]
     def and_hide
-      base_module.send(:remove_const, constant_name)
+      base_module.send(:remove_const, constant_name) if currently_defined?
       self
     end
 
@@ -64,7 +68,7 @@ module Spy
     # @return [self]
     def and_return(value)
       @new_value = value
-      base_module.send(:remove_const, constant_name) if base_module.const_defined?(constant_name, false)
+      and_hide
       base_module.const_set(constant_name, @new_value)
       self
     end
@@ -72,7 +76,19 @@ module Spy
     # checks to see if this spy is hooked?
     # @return [Boolean]
     def hooked?
-      self.class.get(base_module) == self
+      self.class.get(base_module, constant_name) == self
+    end
+
+    def hidden?
+      hooked? && currently_defined?
+    end
+
+    def currently_defined?
+      base_module.const_defined?(constant_name, false)
+    end
+
+    def previously_defined?
+      @previously_defined
     end
 
     class << self
@@ -92,7 +108,10 @@ module Spy
       # retrieves the spy for given constnat and module or returns nil
       # @return [Nil, Constant]
       def get(base_module, constant_name)
-        Nest.get(base_module).hooked_constants[constant_name]
+        nest = Nest.get(base_module)
+        if nest
+          nest.hooked_constants[constant_name]
+        end
       end
     end
   end
