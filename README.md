@@ -33,6 +33,7 @@ Fail faster, code faster.
 * no argument matchers for Spy::Method#has\_been\_called\_with
 * cannot watch all calls to an object to check order in which they are called
 * needs more testing
+* cannot transfer nested constants when stubbing a constant
 
 ## Installation
 

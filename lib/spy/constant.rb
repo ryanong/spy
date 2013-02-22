@@ -46,7 +46,7 @@ module Spy
     # restores the original value of the constant or unsets it if it was unset
     # @return [self]
     def unhook
-      Nest.fetch(base_module).remove(self)
+      Nest.get(base_module).remove(self)
       Agency.instance.retire(self)
 
       if @previously_defined
@@ -71,6 +71,9 @@ module Spy
       and_hide
       base_module.const_set(constant_name, @new_value)
       self
+    end
+
+    def and_transfer_nested_constants
     end
 
     # checks to see if this spy is hooked?

@@ -29,8 +29,12 @@ module Spy
     end
 
     def on_const(const_name)
-      parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
-      Spy.get_const(parent_const, const_name.split('::').last.to_sym) || Spy.on_const(parent_const, const_name.split('::').last.to_sym)
+      if const_name.include? "::"
+      args = [recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, '')), const_name.split('::').last.to_sym]
+      else
+        args = [const_name.to_sym]
+      end
+      Spy.get_const(*args) || Spy.on_const(*args)
     end
 
     def stub_const(const_name, value)
@@ -310,14 +314,6 @@ module Spy
         it_behaves_like "loaded constant stubbing", "TestClass::Nested"
       end
 
-      context 'for a loaded constant prefixed with ::' do
-        it_behaves_like 'loaded constant stubbing', "::TestClass"
-      end
-
-      context 'for an unloaded constant prefixed with ::' do
-        it_behaves_like 'unloaded constant stubbing', "::SomeUndefinedConst"
-      end
-
       context 'for an unloaded constant with nested name that matches a top-level constant' do
         it_behaves_like "unloaded constant stubbing", "TestClass::Hash"
       end
@@ -328,28 +324,6 @@ module Spy
 
       context 'for an unloaded unnested constant' do
         it_behaves_like "unloaded constant stubbing", "X"
-      end
-
-      context 'for an unloaded nested constant' do
-        it_behaves_like "unloaded constant stubbing", "X::Y"
-
-        it 'removes the root constant when rspec clears its mocks' do
-          expect(defined?(X)).to be_false
-          stub_const("X::Y", 7)
-          reset_rspec_mocks
-          expect(defined?(X)).to be_false
-        end
-      end
-
-      context 'for an unloaded deeply nested constant' do
-        it_behaves_like "unloaded constant stubbing", "X::Y::Z"
-
-        it 'removes the root constant when rspec clears its mocks' do
-          expect(defined?(X)).to be_false
-          stub_const("X::Y::Z", 7)
-          reset_rspec_mocks
-          expect(defined?(X)).to be_false
-        end
       end
 
       context 'for an unloaded constant nested within a loaded constant' do
@@ -394,8 +368,12 @@ module Spy
     end
 
     def on_const(const_name)
-      parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
-      Spy.get_const(parent_const, const_name.split('::').last.to_sym) || Spy.on_const(parent_const, const_name.split('::').last.to_sym)
+      if const_name.include? "::"
+      args = [recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, '')), const_name.split('::').last.to_sym]
+      else
+        args = [const_name.to_sym]
+      end
+      Spy.get_const(*args) || Spy.on_const(*args)
     end
 
     def stub_const(const_name, value)
@@ -407,8 +385,12 @@ module Spy
     end
 
     def original(const_name)
-      parent_const = recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, ''))
-      Spy.get_const(parent_const, const_name.split('::').last.to_sym)
+      if const_name.include? "::"
+      args = [recursive_const_get("Object::" + const_name.sub(/(::)?[^:]+\z/, '')), const_name.split('::').last.to_sym]
+      else
+        args = [const_name.to_sym]
+      end
+      Spy.get_const(*args)
     end
 
     describe ".original" do
@@ -417,8 +399,6 @@ module Spy
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
-        it("indicates it has not been mutated")   { expect(const).not_to be_mutated }
-        it("indicates it has not been stubbed")   { expect(const).not_to be_stubbed }
         it("indicates it has not been hidden")    { expect(const).not_to be_hidden }
         it("exposes its original value")          { expect(const.original_value).to eq(:m) }
       end
@@ -429,8 +409,6 @@ module Spy
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
-        it("indicates it has been mutated")       { expect(const).to be_mutated }
-        it("indicates it has been stubbed")       { expect(const).to be_stubbed }
         it("indicates it has not been hidden")    { expect(const).not_to be_hidden }
         it("exposes its original value")          { expect(const.original_value).to eq(:m) }
       end
@@ -441,8 +419,6 @@ module Spy
 
         it("exposes its name")                        { expect(const.name).to eq("TestClass::Undefined") }
         it("indicates it was not previously defined") { expect(const).not_to be_previously_defined }
-        it("indicates it has been mutated")           { expect(const).to be_mutated }
-        it("indicates it has been stubbed")           { expect(const).to be_stubbed }
         it("indicates it has not been hidden")        { expect(const).not_to be_hidden }
         it("returns nil for the original value")      { expect(const.original_value).to be_nil }
       end
@@ -452,8 +428,6 @@ module Spy
 
         it("exposes its name")                        { expect(const.name).to eq("TestClass::Undefined") }
         it("indicates it was not previously defined") { expect(const).not_to be_previously_defined }
-        it("indicates it has not been mutated")       { expect(const).not_to be_mutated }
-        it("indicates it has not been stubbed")       { expect(const).not_to be_stubbed }
         it("indicates it has not been hidden")        { expect(const).not_to be_hidden }
         it("returns nil for the original value")      { expect(const.original_value).to be_nil }
       end
@@ -465,8 +439,6 @@ module Spy
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
-        it("indicates it has been mutated")       { expect(const).to be_mutated }
-        it("indicates it has been stubbed")       { expect(const).to be_stubbed }
         it("indicates it has not been hidden")    { expect(const).not_to be_hidden }
         it("exposes its original value")          { expect(const.original_value).to eq(:m) }
       end
@@ -478,8 +450,6 @@ module Spy
 
         it("exposes its name")                        { expect(const.name).to eq("TestClass::Undefined") }
         it("indicates it was not previously defined") { expect(const).not_to be_previously_defined }
-        it("indicates it has been mutated")           { expect(const).to be_mutated }
-        it("indicates it has been stubbed")           { expect(const).to be_stubbed }
         it("indicates it has not been hidden")        { expect(const).not_to be_hidden }
         it("returns nil for the original value")      { expect(const.original_value).to be_nil }
       end
@@ -490,8 +460,6 @@ module Spy
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
-        it("indicates it has been mutated")       { expect(const).to be_mutated }
-        it("indicates it has not been stubbed")   { expect(const).not_to be_stubbed }
         it("indicates it has been hidden")        { expect(const).to be_hidden }
         it("exposes its original value")          { expect(const.original_value).to eq(:m) }
       end
@@ -503,8 +471,6 @@ module Spy
 
         it("exposes its name")                    { expect(const.name).to eq("TestClass::M") }
         it("indicates it was previously defined") { expect(const).to be_previously_defined }
-        it("indicates it has been mutated")       { expect(const).to be_mutated }
-        it("indicates it has not been stubbed")   { expect(const).not_to be_stubbed }
         it("indicates it has been hidden")        { expect(const).to be_hidden }
         it("exposes its original value")          { expect(const.original_value).to eq(:m) }
       end

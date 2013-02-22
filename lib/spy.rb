@@ -45,7 +45,7 @@ module Spy
     # @param constant_names *[Symbol, Hash]
     # @return [Constant, Array<Constant>]
     def on_const(base_module, *constant_names)
-      if base_module.is_a? Symbol
+      if base_module.is_a?(Hash) || base_module.is_a?(Symbol)
         constant_names.unshift(base_module)
         base_module = Object
       end
@@ -70,6 +70,11 @@ module Spy
     # @param constant_names *[Symbol]
     # @return [Constant, Array<Constant>]
     def off_const(base_module, *constant_names)
+      if base_module.is_a?(Hash) || base_module.is_a?(Symbol)
+        constant_names.unshift(base_module)
+        base_module = Object
+      end
+
       spies = constant_names.map do |constant_name|
         case constant_name
         when String, Symbol
@@ -114,6 +119,11 @@ module Spy
     # @param constant_names *[Symbol]
     # @return [Constant, Array<Constant>]
     def get_const(base_module, *constant_names)
+      if base_module.is_a?(Hash) || base_module.is_a?(Symbol)
+        constant_names.unshift(base_module)
+        base_module = Object
+      end
+
       spies = constant_names.map do |constant_name|
         Constant.get(base_module, constant_name)
       end
