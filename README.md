@@ -34,7 +34,7 @@ Fail faster, code faster.
 * cannot watch all calls to an object to check order in which they are called
 * cannot transfer nested constants when stubbing a constant
   * i don't think anybody uses this anyway
-  * nobody on git hub does
+  * nobody on github does
 * #with is not supported yet
   * this is probably a code smell. You either need to abstract your method more or add separate tests.
 

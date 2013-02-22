@@ -1,7 +1,5 @@
 module Spy
   class Subroutine
-    CallLog = Struct.new(:object, :called_from, :args, :block, :result)
-
     # @!attribute [r] base_object
     #   @return [Object] the object that is being watched
     #
