@@ -22,7 +22,7 @@ class TestConstantSpying < MiniTest::Unit::TestCase
     end
   end
 
-  def setup
+  def teardown
     Spy::Agency.instance.dissolve!
   end
 

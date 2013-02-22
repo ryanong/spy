@@ -7,8 +7,6 @@ require "spy/subroutine"
 require "spy/version"
 
 module Spy
-  SECRET_SPY_KEY = Object.new
-  private_constant :SECRET_SPY_KEY
 
   class << self
     # create a spy on given object
@@ -40,7 +38,26 @@ module Spy
       removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
-    def on_any_instance_of(base_class, *method_names)
+    #
+    def on_instance_method(base_class, *method_names)
+      spies = method_names.map do |method_name|
+        create_and_hook_spy(base_class, method_name, false)
+      end.flatten
+
+      spies.size > 1 ? spies : spies.first
+    end
+
+    def off_instance_method(base_object, *method_names)
+      removed_spies = method_names.map do |method_name|
+        spy = Subroutine.get(base_object, method_name, false)
+        if spy
+          spy.unhook
+        else
+          raise "Spy was not found"
+        end
+      end
+
+      removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
     # create a stub for constants on given module
@@ -136,13 +153,13 @@ module Spy
 
     private
 
-    def create_and_hook_spy(base_object, method_name, opts = {})
+    def create_and_hook_spy(base_object, method_name, singleton_method = true, hook_opts = {})
       case method_name
       when String, Symbol
-        Subroutine.new(base_object, method_name).hook(opts)
+        Subroutine.new(base_object, method_name, singleton_method).hook(hook_opts)
       when Hash
         method_name.map do |name, result|
-          create_and_hook_spy(base_object, name, opts).and_return(result)
+          create_and_hook_spy(base_object, name, singleton_method, hook_opts).and_return(result)
         end
       else
         raise ArgumentError.new "#{method_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"

@@ -5,21 +5,14 @@ module Spy
   class Agency
     include Singleton
 
-    # @!attribute [r] subroutines
-    #   @return [Array<Subroutine>] all the subroutines that have been hooked
-    #
-    # @!attribute [r] constants
-    #   @return [Array<Constant>] all the constants that have been hooked
-    #
-    # @!attribute [r] doubles
-    #   @return [Array<Double>] all the doubles that have been created
-
-
-    attr_reader :subroutines, :constants, :doubles
-
     # @private
     def initialize
       clear!
+    end
+
+
+    def find(id)
+      @spies[id]
     end
 
     # Record that a spy was initialized and hooked
@@ -27,16 +20,11 @@ module Spy
     # @return [spy]
     def recruit(spy)
       case spy
-      when Subroutine
-        subroutines << spy
-      when Constant
-        constants << spy
-      when Double
-        doubles << spy
+      when Subroutine,  Constant, Double
+        @spies[spy.object_id] = spy
       else
         raise "Not a spy"
       end
-      spy
     end
 
     # remove spy from the records
@@ -44,16 +32,11 @@ module Spy
     # @return [spy]
     def retire(spy)
       case spy
-      when Subroutine
-        subroutines.delete(spy)
-      when Constant
-        constants.delete(spy)
-      when Double
-        doubles.delete(spy)
+      when Subroutine,  Constant, Double
+        @spies.delete(spy.object_id)
       else
         raise "Not a spy"
       end
-      spy
     end
 
     # checks to see if a spy is hooked
@@ -61,30 +44,35 @@ module Spy
     # @return [Boolean]
     def active?(spy)
       case spy
-      when Subroutine
-        subroutines.include?(spy)
-      when Constant
-        constants.include?(spy)
-      when Double
-        doubles.include?(spy)
+      when Subroutine,  Constant, Double
+        @spies.has_key?(spy.object_id)
+      else
+        raise "Not a spy"
       end
     end
 
     # unhooks all spies and clears records
     # @return [self]
     def dissolve!
-      subroutines.each(&:unhook)
-      constants.each(&:unhook)
+      @spies.values.each do |spy|
+        spy.unhook if spy.respond_to?(:unhook)
+      end
       clear!
     end
 
     # clears records
     # @return [self]
     def clear!
-      @subroutines = []
-      @constants = []
-      @doubles = []
+      @spies = {}
       self
+    end
+
+    def spies
+      @spies.values
+    end
+
+    def each
+      spies.each
     end
   end
 end

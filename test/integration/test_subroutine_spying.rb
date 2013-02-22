@@ -2,8 +2,11 @@ require 'test_helper'
 
 class TestSpy < MiniTest::Unit::TestCase
   def setup
-    Spy::Agency.instance.dissolve!
     @pen = Pen.new
+  end
+
+  def teardown
+    Spy::Agency.instance.dissolve!
   end
 
   def test_spy_on_hooks_and_saves_spy_with_array
@@ -25,7 +28,7 @@ class TestSpy < MiniTest::Unit::TestCase
 
     assert_kind_of Spy::Subroutine, pen_write_spy
     assert_kind_of Spy::Subroutine, pen_write_hello_spy
-    assert_equal [pen_write_spy, pen_write_hello_spy], Spy::Agency.instance.subroutines
+    assert_equal [pen_write_spy, pen_write_hello_spy], Spy::Agency.instance.spies
     assert pen_write_spy.has_been_called?
     assert pen_write_hello_spy.has_been_called?
   end

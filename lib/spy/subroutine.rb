@@ -23,28 +23,33 @@ module Spy
     # set what object and method the spy should watch
     # @param object
     # @param method_name <Symbol>
+    # @param singleton_method <Boolean> spy on the singleton method or the normal method
     def initialize(object, method_name, singleton_method = true)
       @base_object, @method_name = object, method_name
-      @define_method_with = singleton_method ? :define_singleton_method : :define_method
+      @singleton_method = singleton_method
       reset!
     end
 
     # hooks the method into the object and stashes original method if it exists
-    # @param opts [Hash{force => false, visibility => nil}] set :force => true if you want it to ignore if the method exists, or visibility to [:public, :protected, :private] to overwride current visibility
+    # @param [Hash] opts what do do when hooking into a method
+    # @option opts [Boolean] force (false) if set to true will hook the method even if it doesn't exist
+    # @option opts [Symbol<:public, :protected, :private>] visibility overrides visibility with whatever method is given
     # @return [self]
     def hook(opts = {})
       @hook_opts = opts
       raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
 
       hook_opts[:force] ||= base_object.is_a?(Double)
-      if base_object.respond_to?(method_name, true) || !hook_opts[:force]
-        @original_method = base_object.method(method_name)
+      if (base_object_respond_to?(method_name, true)) || !hook_opts[:force]
+        @original_method = current_method
       end
       hook_opts[:visibility] ||= method_visibility
 
-      base_object.send(@define_method_with, method_name, override_method)
+      base_object.send(define_method_with, method_name, override_method)
 
-      method_owner.send(hook_opts[:visibility], method_name) if hook_opts[:visibility]
+      if [:public, :protected, :private].include? hook_opts[:visibility]
+        method_owner.send(hook_opts[:visibility], method_name)
+      end
 
       Agency.instance.recruit(self)
       @was_hooked = true
@@ -70,7 +75,7 @@ module Spy
     # is the spy hooked?
     # @return [Boolean]
     def hooked?
-      self == self.class.get(base_object, method_name)
+      self == self.class.get(base_object, method_name, @singleton_method)
     end
 
     # @overload and_return(value)
@@ -194,18 +199,13 @@ module Spy
 
     private
 
-    SPY_METHOD_PARAMS = [[:rest, :__spy_args], [:block, :block]]
-    private_constant :SPY_METHOD_PARAMS
-
     def override_method
+      eval <<-METHOD, binding, __FILE__, __LINE__ + 1
       __method_spy__ = self
-      lambda do |*__spy_args, &block|
-        if __spy_args.first === SECRET_SPY_KEY
-          __method_spy__
-        else
-          __method_spy__.invoke(self, __spy_args, block, caller(1)[0])
-        end
+      lambda do |*__spy_args_#{self.object_id}, &block|
+        __method_spy__.invoke(self, __spy_args_#{self.object_id}, block, caller(1)[0])
       end
+      METHOD
     end
 
     def call_with_yield(&block)
@@ -227,15 +227,29 @@ module Spy
 
     def method_visibility
       @method_visibility ||=
-        if base_object.respond_to?(method_name)
+        if base_object_respond_to?(method_name)
           if original_method && original_method.owner.protected_method_defined?(method_name)
             :protected
           else
             :public
           end
-        elsif base_object.respond_to?(method_name, true)
+        elsif base_object_respond_to?(method_name, true)
           :private
         end
+    end
+
+    def base_object_respond_to?(method_name, include_private = false)
+      if @singleton_method
+        base_object.respond_to?(method_name, include_private)
+      else
+        base_object.instance_methods.include?(method_name) || (
+          include_private && base_object.private_instance_methods.include?(method_name)
+        )
+      end
+    end
+
+    def define_method_with
+      @singleton_method ? :define_singleton_method : :define_method
     end
 
     def check_arity!(arity)
@@ -246,8 +260,12 @@ module Spy
       @arity_range ||= self.class.arity_range_of(original_method) if original_method
     end
 
+    def current_method
+      @singleton_method ? base_object.method(method_name) : base_object.instance_method(method_name)
+    end
+
     def method_owner
-      @method_owner ||= base_object.method(method_name).owner
+      @method_owner ||= current_method.owner
     end
 
     class << self
@@ -279,19 +297,35 @@ module Spy
         end
       end
 
-      def get(base_object, method_name)
-        if base_object.respond_to?(method_name, true) && base_object.method(method_name).parameters == SPY_METHOD_PARAMS
-          base_object.send(method_name, SECRET_SPY_KEY)
+      def get(base_object, method_name, singleton_method = true)
+        if singleton_method
+          if base_object.respond_to?(method_name, true)
+            spied_method = base_object.method(method_name)
+          end
+        elsif (base_object.instance_methods + base_object.private_instance_methods).include?(method_name)
+          spied_method = base_object.instance_method(method_name)
+        end
+
+        if spied_method
+          Agency.instance.find(get_spy_id(spied_method))
         end
       end
 
       def get_spies(base_object)
         all_methods = base_object.public_methods(false) + base_object.protected_methods(false) + base_object.private_methods(false)
         all_methods.map do |method_name|
-          if base_object.method(method_name).parameters == SPY_METHOD_PARAMS
-            base_object.send(method_name, SECRET_SPY_KEY)
-          end
+          Agency.instance.find(get_spy_id(base_object.method(method_name)))
         end.compact
+      end
+
+      private
+
+      def get_spy_id(method)
+        return nil unless method.parameters[0].is_a?(Array)
+        first_param_name = method.parameters[0][1].to_s
+        if first_param_name.include?("__spy_args")
+          first_param_name.split("_").last.to_i
+        end
       end
     end
   end

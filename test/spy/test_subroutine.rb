@@ -7,15 +7,18 @@ module Spy
     end
 
     def setup
-      Agency.instance.dissolve!
       @pen = Pen.new
+    end
+
+    def teardown
+      Spy::Agency.instance.dissolve!
     end
 
     def test_spy_on_hook_and_saves_spy
       pen_write_spy = spy_on(@pen, :write).and_return("hello")
       assert_equal "hello", @pen.write(nil)
       assert_kind_of Subroutine, pen_write_spy
-      assert_equal [pen_write_spy], Agency.instance.subroutines
+      assert_equal [pen_write_spy], Agency.instance.spies
       assert pen_write_spy.has_been_called?
     end
 

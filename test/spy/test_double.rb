@@ -2,6 +2,10 @@ require 'test_helper'
 
 module Spy
   class TestDouble < MiniTest::Unit::TestCase
+    def teardown
+      Spy::Agency.instance.dissolve!
+    end
+
     def test_double_creation
       double = Double.new("NewDouble", :meth_1, :meth_2)
 
