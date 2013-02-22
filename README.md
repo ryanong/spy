@@ -29,11 +29,13 @@ Fail faster, code faster.
 
 ## Why not to use this
 
-* mocking null objects is not supported
+* mocking null objects is not supported(yet)
 * no argument matchers for Spy::Method#has\_been\_called\_with
 * cannot watch all calls to an object to check order in which they are called
-* needs more testing
 * cannot transfer nested constants when stubbing a constant
+  * i don't think anybody uses this anyway
+* #with is not supported yet
+  * this is probably a code smell. You either need to abstract your method more or add separate test.
 
 ## Installation
 

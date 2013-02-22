@@ -46,12 +46,6 @@ module RSpec
         expect(@class).to respond_to(:msg)
       end
 
-      it "handles multiple stubbed methods" do
-        Spy::Subroutine.new(@instance, :msg1 => 1, :msg2 => 2).hook(force: true)
-        expect(@instance.msg1).to eq(1)
-        expect(@instance.msg2).to eq(2)
-      end
-
       it "yields a specified object" do
         Spy::Subroutine.new(@instance, :method_that_yields).hook(force: true).and_yield(:yielded_obj)
         current_value = :value_before

@@ -40,6 +40,9 @@ module Spy
       removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
+    def on_any_instance_of(base_class, *method_names)
+    end
+
     # create a stub for constants on given module
     # @param base_module [Module]
     # @param constant_names *[Symbol, Hash]

@@ -34,6 +34,10 @@ class Pen
   def public_method
   end
 
+  def another
+    "another"
+  end
+
   protected
   def protected_method
   end
@@ -48,3 +52,14 @@ class Pen
     end
   end
 end
+
+another = "meta_method"
+
+Pen.define_singleton_method(:meta_method) do
+  another
+end
+
+Pen.send(:define_method, :meta_method) do
+  another
+end
+
