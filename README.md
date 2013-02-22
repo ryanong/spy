@@ -170,7 +170,7 @@ In spec\_helper.rb
 require "rspec/autorun"
 require "spy"
 RSpec.configure do |c|
-  c.before { Spy.teardown  }
+  c.after { Spy.teardown  }
 end
 ```
 
@@ -179,7 +179,7 @@ end
 ```ruby
 require "spy"
 class Test::Unit::TestCase
-  def setup
+  def teardown
     Spy.teardown
   end
 end
