@@ -73,9 +73,6 @@ module Spy
       self
     end
 
-    def and_transfer_nested_constants
-    end
-
     # checks to see if this spy is hooked?
     # @return [Boolean]
     def hooked?

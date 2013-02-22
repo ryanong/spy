@@ -1,6 +1,6 @@
 module Spy
   class Subroutine
-    CallLog = Struct.new(:object, :args, :block, :result)
+    CallLog = Struct.new(:object, :called_from, :args, :block, :result)
 
     # @!attribute [r] base_object
     #   @return [Object] the object that is being watched
@@ -47,7 +47,7 @@ module Spy
         if __spy_args.first === SECRET_SPY_KEY
           __method_spy__
         else
-          __method_spy__.invoke(self,__spy_args,block)
+          __method_spy__.invoke(self,__spy_args,block, caller(1)[0])
         end
       end
 
@@ -183,11 +183,11 @@ module Spy
 
     # invoke that the method has been called. You really shouldn't use this
     # method.
-    def invoke(object, args, block)
+    def invoke(object, args, block, called_from)
       check_arity!(args.size)
       result = @plan ? @plan.call(*args, &block) : nil
     ensure
-      calls << CallLog.new(object, args, block, result)
+      calls << CallLog.new(object,called_from, args, block, result)
     end
 
     # reset the call log

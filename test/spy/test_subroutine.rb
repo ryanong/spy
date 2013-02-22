@@ -124,11 +124,13 @@ module Spy
       args = ["hello world"]
       block = Proc.new {}
       pen_write_spy = spy_on(@pen, :write)
+      called_from = "#{__FILE__}:#{__LINE__ + 1}:in `#{__method__}'"
       @pen.write(*args, &block)
       call_log = pen_write_spy.calls.first
       assert_equal @pen, call_log.object
       assert_equal args, call_log.args
       assert_equal block, call_log.block
+      assert_equal called_from, call_log.called_from
     end
 
     def test_that_method_spy_keeps_arity
