@@ -7,6 +7,12 @@ class TestAnyInstanceOf < MiniTest::Unit::TestCase
     end
   end
 
+  class Bar < Foo
+    def bar
+      super
+    end
+  end
+
   def teardown
     Spy::Agency.instance.dissolve!
   end
@@ -15,9 +21,10 @@ class TestAnyInstanceOf < MiniTest::Unit::TestCase
     assert_equal Foo.new.bar, "foobar"
     spy = Spy.on_instance_method(Foo, bar: "timshel")
     assert_equal spy, Spy::Subroutine.get(Foo, :bar, false)
-    assert_equal Foo.new.bar, "timshel"
-    assert_equal Foo.new.bar, "timshel"
-    assert_equal 2, spy.calls.size
+    assert_equal "timshel", Foo.new.bar
+    assert_equal "timshel", Foo.new.bar
+    assert_equal "timshel", Bar.new.bar
+    assert_equal 3, spy.calls.size
 
     spy = Spy.off_instance_method(Foo, :bar)
     assert_equal Foo.new.bar, "foobar"

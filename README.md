@@ -34,8 +34,9 @@ Fail faster, code faster.
 * cannot watch all calls to an object to check order in which they are called
 * cannot transfer nested constants when stubbing a constant
   * i don't think anybody uses this anyway
+  * nobody on git hub does
 * #with is not supported yet
-  * this is probably a code smell. You either need to abstract your method more or add separate test.
+  * this is probably a code smell. You either need to abstract your method more or add separate tests.
 
 ## Installation
 
@@ -63,6 +64,8 @@ Spy support 2 different ways of spying an existing method on an object.
 Spy.on(book, title: "East of Eden")
 Spy.on(book, :title).and_return("East of Eden")
 Spy.on(book, :title).and_return { "East of Eden" }
+
+book.title  #=> "East of Eden"
 ```
 
 Spy will raise an error if you try to stub on a method that doesn't exist.
@@ -70,6 +73,15 @@ You can force the creation of a sstub on method that didn't exist but it really 
 
 ```ruby
 Spy.new(book, :flamethrower).hook(force:true).and_return("burnninante")
+```
+
+You can also stub instance methods of Classes and Modules
+
+```ruby
+Spy.on_instance_method(Book, :title).and_return("Cannery Row")
+
+Book.new(title: "Siddhartha").title   #=> "Cannery Row"
+Book.new(title: "The Big Cheese").title   #=> "Cannery Row"
 ```
 
 ### Test Doubles
