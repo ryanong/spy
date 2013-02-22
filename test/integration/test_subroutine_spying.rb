@@ -7,8 +7,8 @@ class TestSpy < MiniTest::Unit::TestCase
   end
 
   def test_spy_on_hooks_and_saves_spy_with_array
-    pen_write_spy, pen_write_hello_spy = Spy::Subroutine.on(@pen, :write, :write_hello)
-    assert_nil @pen.write(nil)
+    pen_write_spy, pen_write_hello_spy = Spy.on(@pen, :write, :write_hello)
+    assert_nil @pen.write("hello")
     assert_nil @pen.write_hello
 
     assert_kind_of Spy::Subroutine, pen_write_spy

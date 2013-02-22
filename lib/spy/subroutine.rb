@@ -186,8 +186,8 @@ module Spy
     def invoke(object, args, block)
       check_arity!(args.size)
       result = @plan ? @plan.call(*args, &block) : nil
+    ensure
       calls << CallLog.new(object, args, block, result)
-      result
     end
 
     # reset the call log
