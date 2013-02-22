@@ -24,6 +24,7 @@ module Spy
       @previously_defined = nil
     end
 
+    # full name of spied constant
     def name
       "#{base_module.name}::#{constant_name}"
     end
@@ -79,14 +80,20 @@ module Spy
       self.class.get(base_module, constant_name) == self
     end
 
+    # checks to see if the constant is hidden?
+    # @return [Boolean]
     def hidden?
       hooked? && currently_defined?
     end
 
+    # checks to see if the constant is currently defined?
+    # @return [Boolean]
     def currently_defined?
       base_module.const_defined?(constant_name, false)
     end
 
+    # checks to see if the constant is previously defined?
+    # @return [Boolean]
     def previously_defined?
       @previously_defined
     end

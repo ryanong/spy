@@ -11,6 +11,9 @@ module Spy
     end
 
 
+    # given a spy ID it will return the associated spy
+    # @param id [Integer] spy object id
+    # @return [Nil, Subroutine, Constant, Double]
     def find(id)
       @spies[id]
     end
@@ -67,12 +70,11 @@ module Spy
       self
     end
 
+    # returns all the spies that have been initialized since the creation of
+    # this agency
+    # @return [Array<Subroutine, Constant, Double>]
     def spies
       @spies.values
-    end
-
-    def each
-      spies.each
     end
   end
 end

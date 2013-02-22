@@ -297,6 +297,11 @@ module Spy
         end
       end
 
+      # retrieve the method spy from an object
+      # @param base_object
+      # @param method_name [Symbol]
+      # @param singleton_method [Boolean] this a singleton method or a instance method?
+      # @return [Array<Subroutine>]
       def get(base_object, method_name, singleton_method = true)
         if singleton_method
           if base_object.respond_to?(method_name, true)
@@ -311,8 +316,14 @@ module Spy
         end
       end
 
+      # retrieve all the spies from a given object
+      # @param base_object
+      # @return [Array<Subroutine>]
       def get_spies(base_object)
-        all_methods = base_object.public_methods(false) + base_object.protected_methods(false) + base_object.private_methods(false)
+        all_methods = base_object.public_methods(false) +
+          base_object.protected_methods(false) +
+          base_object.private_methods(false)
+        all_methods += base_object.instance_methods(false) + base_object.private_instance_methods(false) if base_object.respond_to?(:instance_methods)
         all_methods.map do |method_name|
           Agency.instance.find(get_spy_id(base_object.method(method_name)))
         end.compact

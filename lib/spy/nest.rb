@@ -49,7 +49,7 @@ module Spy
     class << self
       # retrieves the nest for a given module
       # @param base_module [Module]
-      # @return [nil, Nest]
+      # @return [Nil, Nest]
       def get(base_module)
         all[base_module.name]
       end
