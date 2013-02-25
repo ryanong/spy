@@ -74,8 +74,7 @@ module Spy
     end
 
     def test_spy_can_hook_a_non_existent_method_if_param_set
-      spy = Subroutine.new(@pen, :no_method).and_return(:yep)
-      spy.hook(force: true)
+      Subroutine.new(@pen, :no_method).hook(force:true).and_return(:yep)
       assert_equal :yep, @pen.no_method
     end
 

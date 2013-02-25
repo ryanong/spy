@@ -83,18 +83,10 @@ module Spy
     #
     # @return [self]
     def and_return(value = nil)
+      raise ArgumentError.new("value and block conflict. Choose one") if !(value.nil? || value.is_a?(Hash) && value.has_key?(:force)) && block_given?
       if block_given?
         @plan = Proc.new
-        if value.nil? || value.is_a?(Hash) && value.has_key?(:force)
-          if !(value.is_a?(Hash) && value[:force]) &&
-              original_method &&
-              original_method.arity >=0 &&
-              @plan.arity > original_method.arity
-            raise ArgumentError.new "The original method only has an arity of #{original_method.arity} you have an arity of #{@plan.arity}"
-          end
-        else
-          raise ArgumentError.new("value and block conflict. Choose one") if !value.nil?
-        end
+        check_for_too_many_arguments!(@plan)
       else
         @plan = Proc.new { value }
       end
@@ -115,10 +107,10 @@ module Spy
     # @return [self]
     def and_call_through
       raise "can only call through if original method is set" unless method_visibility
-      if original_method
-        @plan = original_method
-      else
-        @plan = Proc.new do |*args, &block|
+      @plan = Proc.new do |*args, &block|
+        if original_method
+          original_method.call(*args, &block)
+        else
           base_object.send(:method_missing, method_name, *args, &block)
         end
       end
@@ -182,7 +174,10 @@ module Spy
     # method.
     def invoke(object, args, block, called_from)
       check_arity!(args.size)
-      result = @plan ? @plan.call(*args, &block) : nil
+      result = if @plan
+                 check_for_too_many_arguments!(@plan)
+                 @plan.call(*args, &block)
+               end
     ensure
       calls << CallLog.new(object,called_from, args, block, result)
     end
@@ -251,11 +246,41 @@ module Spy
     end
 
     def check_arity!(arity)
-      self.class.check_arity_against_range!(arity_range, arity)
+      return unless arity_range
+      if arity < arity_range.min
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.min})")
+      elsif arity > arity_range.max
+        raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
+      end
+    end
+
+    def check_for_too_many_arguments!(block)
+      return unless arity_range
+      min_arity = block.arity
+      min_arity = min_arity.abs - 1 if min_arity < 0
+
+      if min_arity > arity_range.max
+        raise ArgumentError.new("block requires #{min_arity} arguments while original_method require a maximum of #{arity_range.max}")
+      end
     end
 
     def arity_range
-      @arity_range ||= self.class.arity_range_of(original_method) if original_method
+      @arity_range ||=
+        if original_method
+          min = max = 0
+          original_method.parameters.each do |type,_|
+            case type
+            when :req
+              min += 1
+              max += 1
+            when :opt
+              max += 1
+            when :rest
+              max = Float::INFINITY
+            end
+          end
+          (min..max)
+        end
     end
 
     def current_method
@@ -267,34 +292,6 @@ module Spy
     end
 
     class << self
-      # @private
-      def arity_range_of(block)
-        raise "#{block.inspect} does not respond to :parameters" unless block.respond_to?(:parameters)
-        min = max = 0
-        block.parameters.each do |type,_|
-          case type
-          when :req
-            min += 1
-            max += 1
-          when :opt
-            max += 1
-          when :rest
-            max = Float::INFINITY
-          end
-        end
-        (min..max)
-      end
-
-      # @private
-      def check_arity_against_range!(arity_range, arity)
-        return unless arity_range
-        if arity < arity_range.min
-          raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.min})")
-        elsif arity > arity_range.max
-          raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
-        end
-      end
-
       # retrieve the method spy from an object
       # @param base_object
       # @param method_name [Symbol]
