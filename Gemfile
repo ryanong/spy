@@ -5,5 +5,5 @@ gemspec
 gem 'pry'
 gem 'pry-nav'
 gem 'yard'
-gem 'redcarpet'
+gem 'redcarpet', platforms: :mri
 gem 'rake'

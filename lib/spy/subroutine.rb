@@ -38,6 +38,7 @@ module Spy
       raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
 
       hook_opts[:force] ||= base_object.is_a?(Double)
+
       if (base_object_respond_to?(method_name, true)) || !hook_opts[:force]
         @original_method = current_method
       end
