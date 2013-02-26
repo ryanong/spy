@@ -126,9 +126,10 @@ When you stub a method it returns a spy. A spy records what calls have been made
 validator = Spy.double("validator")
 validate_spy = Spy.on(validator, :validate)
 validate_spy.has_been_called? #=> false
+
 validator.validate("01234")   #=> nil
 validate_spy.has_been_called? #=> true
-validate_spy.has_been_called_with?("01234) #=> true
+validate_spy.has_been_called_with?("01234") #=> true
 ```
 
 ### Calling through
@@ -137,6 +138,8 @@ If you just want to make sure if a method is called and not override the output 
 ```ruby
 Spy.on(book, :read_page).and_call_through
 ```
+
+By if the original method never existed it will call #method\_missing on the spied object.
 
 ### Call Logs
 
@@ -153,6 +156,7 @@ first_call.object #=> book
 first_call.args   #=> [5]
 first_call.block  #=> Proc.new { "this is a block" }
 first_call.result #=> "hello world"
+first_call.called_from #=> "file_name.rb:line_number"
 ```
 
 ### MiniTest
@@ -181,6 +185,8 @@ end
 require "spy"
 class Test::Unit::TestCase
   def teardown
+    # if you don't add super to every teardown then you will have to add this
+    # line to every file.
     Spy.teardown
   end
 end
