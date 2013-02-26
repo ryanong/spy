@@ -32,7 +32,7 @@ module Spy
         if spy
           spy.unhook
         else
-          raise "Spy was not found"
+          raise "#{spy.inspect} was not found to be hooked"
         end
       end
 
@@ -54,7 +54,7 @@ module Spy
         if spy
           spy.unhook
         else
-          raise "Spy was not found"
+          raise "#{spy.inspect} was not found to be hooked"
         end
       end
 
