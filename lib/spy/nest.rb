@@ -35,6 +35,8 @@ module Spy
     def remove(spy)
       if @hooked_constants[spy.constant_name] == spy
         @hooked_constants.delete(spy.constant_name)
+      else
+        raise "#{spy.constant_name} was never added"
       end
       self
     end

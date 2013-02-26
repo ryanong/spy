@@ -19,9 +19,7 @@ module Spy
       raise "#{base_module.inspect} is not a kind of Module" unless base_module.is_a? Module
       raise "#{constant_name.inspect} is not a kind of Symbol" unless constant_name.is_a? Symbol
       @base_module, @constant_name = base_module, constant_name.to_sym
-      @original_value = nil
-      @new_value = nil
-      @previously_defined = nil
+      @original_value = @new_value = @previously_defined = nil
     end
 
     # full name of spied constant
@@ -33,11 +31,12 @@ module Spy
     # @param opts [Hash{force => false}] set :force => true if you want it to ignore if the constant exists
     # @return [self]
     def hook(opts = {})
+      opts[:force] ||= false
       Nest.fetch(base_module).add(self)
       Agency.instance.recruit(self)
-      opts[:force] ||= false
+
       @previously_defined = currently_defined?
-      if @previously_defined || !opts[:force]
+      if previously_defined? || !opts[:force]
         @original_value = base_module.const_get(constant_name, false)
       end
       and_return(@new_value)
@@ -50,10 +49,9 @@ module Spy
       Nest.get(base_module).remove(self)
       Agency.instance.retire(self)
 
-      if @previously_defined
-        and_return(@original_value)
-      end
-      @original_value = nil
+      and_return(@original_value) if previously_defined?
+
+      @original_value = @previously_defined = nil
       self
     end
 
