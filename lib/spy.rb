@@ -72,7 +72,7 @@ module Spy
       end
       spies = constant_names.map do |constant_name|
         case constant_name
-        when String, Symbol
+        when Symbol
           Constant.on(base_module, constant_name)
         when Hash
           constant_name.map do |name, result|
@@ -91,23 +91,17 @@ module Spy
     # @param constant_names *[Symbol]
     # @return [Constant, Array<Constant>]
     def off_const(base_module, *constant_names)
-      if base_module.is_a?(Hash) || base_module.is_a?(Symbol)
+      if base_module.is_a?(Symbol)
         constant_names.unshift(base_module)
         base_module = Object
       end
 
       spies = constant_names.map do |constant_name|
-        case constant_name
-        when String, Symbol
-          Constant.off(base_module, constant_name)
-        when Hash
-          constant_name.map do |name, result|
-            off_const(base_module, name).and_return(result)
-          end
-        else
+        unless constant_name.is_a?(Symbol)
           raise ArgumentError.new "#{constant_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"
         end
-      end.flatten
+        Constant.off(base_module, constant_name)
+      end
 
       spies.size > 1 ? spies : spies.first
     end
@@ -140,7 +134,7 @@ module Spy
     # @param constant_names *[Symbol]
     # @return [Constant, Array<Constant>]
     def get_const(base_module, *constant_names)
-      if base_module.is_a?(Hash) || base_module.is_a?(Symbol)
+      if base_module.is_a?(Symbol)
         constant_names.unshift(base_module)
         base_module = Object
       end
