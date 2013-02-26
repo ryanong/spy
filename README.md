@@ -184,7 +184,7 @@ require "rspec/autorun"
 require "spy"
 RSpec.configure do |c|
   c.after { Spy.teardown  }
-  c.mock_with :absolutely_nothing
+  c.mock_with :absolutely_nothing # this is completely optional.
 end
 ```
 
