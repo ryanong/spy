@@ -305,14 +305,16 @@ module Spy
       # @param singleton_method [Boolean] (true) only get singleton_method_spies
       # @return [Array<Subroutine>]
       def get_spies(base_object, singleton_methods = true)
-        if singleton_methods
-        all_methods = base_object.public_methods(false) +
-          base_object.protected_methods(false) +
-          base_object.private_methods(false)
-        else
-          all_methods = base_object.instance_methods(false) +
-            base_object.private_instance_methods(false)
-        end
+        all_methods =
+          if singleton_methods
+            base_object.public_methods(false) +
+              base_object.protected_methods(false) +
+              base_object.private_methods(false)
+          else
+            base_object.public_instance_methods(false) +
+              base_object.protected_instance_methods(false) +
+              base_object.private_instance_methods(false)
+          end
 
         all_methods.map do |method_name|
           Agency.instance.find(get_spy_id(base_object.method(method_name)))
