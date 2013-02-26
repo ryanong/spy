@@ -180,7 +180,7 @@ module Spy
                  @plan.call(*args, &block)
                end
     ensure
-      calls << CallLog.new(object,called_from, args, block, result)
+      calls << CallLog.new(object, called_from, args, block, result)
     end
 
     # reset the call log
@@ -200,18 +200,6 @@ module Spy
         __method_spy__.invoke(self, __spy_args_#{self.object_id}, block, caller(1)[0])
       end
       METHOD
-    end
-
-    def call_with_yield(&block)
-      raise "no block sent" unless block
-      value = nil
-      @args_to_yield.each do |args|
-        if block.arity > -1 && args.length != block.arity
-          @error_generator.raise_wrong_arity_error args, block.arity
-        end
-        value = @eval_context ? @eval_context.instance_exec(*args, &block) : block.call(*args)
-      end
-      value
     end
 
     def clear_method!
