@@ -1,4 +1,4 @@
-# Spy [![Build Status](https://travis-ci.org/ryanong/spy.png?branch=master)](https://travis-ci.org/ryanong/spy)
+# Spy [![Build Status](https://travis-ci.org/ryanong/spy.png?branch=master)](https://travis-ci.org/ryanong/spy) [![Gem Version](https://badge.fury.io/rb/spy.png)](http://badge.fury.io/rb/spy)
 
 Spy is a lightweight stubbing framework with support for method spies, constant stubs, and object doubles.
 
