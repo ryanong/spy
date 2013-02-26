@@ -35,8 +35,9 @@ Fail faster, code faster.
 * cannot transfer nested constants when stubbing a constant
   * i don't think anybody uses this anyway
   * nobody on github does
-* #with is not supported yet
-  * this is probably a code smell. You either need to abstract your method more or add separate tests.
+* #with is not supported
+  * you can usually just check the call logs.
+  * if you do need to use this. It is probably a code smell. You either need to abstract your method more or add separate tests.
 
 ## Installation
 
@@ -69,7 +70,7 @@ book.title  #=> "East of Eden"
 ```
 
 Spy will raise an error if you try to stub on a method that doesn't exist.
-You can force the creation of a sstub on method that didn't exist but it really isn't suggested.
+You can force the creation of a stub on method that didn't exist but it really isn't suggested.
 
 ```ruby
 Spy.new(book, :flamethrower).hook(force:true).and_return("burnninante")
@@ -130,6 +131,12 @@ validate_spy.has_been_called? #=> false
 validator.validate("01234")   #=> nil
 validate_spy.has_been_called? #=> true
 validate_spy.has_been_called_with?("01234") #=> true
+```
+
+You can also retrieve a method spy on demand
+
+```ruby
+Spy.get(validator, :validate)
 ```
 
 ### Calling through
