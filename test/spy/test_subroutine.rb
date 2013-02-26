@@ -187,22 +187,37 @@ module Spy
     def test_hook_mimics_public_visibility
       spy_on(@pen, :public_method)
       assert @pen.singleton_class.public_method_defined? :public_method
-      refute @pen.singleton_class.protected_method_defined? :public_method
-      refute @pen.singleton_class.private_method_defined? :public_method
     end
 
     def test_hook_mimics_protected_visibility
       spy_on(@pen, :protected_method)
-      refute @pen.singleton_class.public_method_defined? :protected_method
       assert @pen.singleton_class.protected_method_defined? :protected_method
-      refute @pen.singleton_class.private_method_defined? :protected_method
     end
 
     def test_hook_mimics_private_visibility
       spy_on(@pen, :private_method)
-      refute @pen.singleton_class.public_method_defined? :private_method
-      refute @pen.singleton_class.protected_method_defined? :private_method
       assert @pen.singleton_class.private_method_defined? :private_method
+    end
+
+    def test_hook_mimics_class_public_visibility
+      spy_on(Pen, :public_method)
+      assert Pen.public_method_defined? :public_method
+      Spy.off(Pen, :public_method)
+      assert Pen.public_method_defined? :public_method
+    end
+
+    def test_hook_mimics_class_protected_visibility
+      spy_on(Pen, :protected_method)
+      assert Pen.protected_method_defined? :protected_method
+      Spy.off(Pen, :protected_method)
+      assert Pen.protected_method_defined? :protected_method
+    end
+
+    def test_hook_mimics_class_private_visibility
+      spy_on(Pen, :private_method)
+      assert Pen.private_method_defined? :private_method
+      Spy.off(Pen, :private_method)
+      assert Pen.private_method_defined? :private_method
     end
 
     def test_spy_get_can_retrieve_a_spy

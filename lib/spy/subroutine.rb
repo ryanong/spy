@@ -38,11 +38,11 @@ module Spy
       raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
 
       hook_opts[:force] ||= base_object.is_a?(Double)
+      hook_opts[:visibility] ||= original_method_visibility
 
-      if (base_object_respond_to?(method_name, true)) || !hook_opts[:force]
+      if original_method_visibility || !hook_opts[:force]
         @original_method = current_method
       end
-      hook_opts[:visibility] ||= method_visibility
 
       base_object.send(define_method_with, method_name, override_method)
 
@@ -62,7 +62,7 @@ module Spy
 
       if original_method && method_owner == original_method.owner
         original_method.owner.send(:define_method, method_name, original_method)
-        original_method.owner.send(method_visibility, method_name) if method_visibility
+        original_method.owner.send(original_method_visibility, method_name) if original_method_visibility
       else
         method_owner.send(:remove_method, method_name)
       end
@@ -107,7 +107,6 @@ module Spy
     # tells the spy to call the original method
     # @return [self]
     def and_call_through
-      raise "can only call through if original method is set" unless method_visibility
       @plan = Proc.new do |*args, &block|
         if original_method
           original_method.call(*args, &block)
@@ -204,29 +203,30 @@ module Spy
 
     def clear_method!
       @hooked = false
-      @hook_opts = @original_method = @arity_range = @method_visibility = @method_owner= nil
+      @hook_opts = @original_method = @arity_range = @original_method_visibility = @method_owner= nil
     end
 
-    def method_visibility
-      @method_visibility ||=
-        if base_object_respond_to?(method_name)
-          if original_method && original_method.owner.protected_method_defined?(method_name)
-            :protected
-          else
-            :public
-          end
-        elsif base_object_respond_to?(method_name, true)
+    def original_method_visibility
+      @original_method_visibility ||= method_visibility_of(method_name)
+    end
+
+    def method_visibility_of(method_name, all = true)
+      if @singleton_method
+        if base_object.public_methods(all).include?(method_name)
+          :public
+        elsif base_object.protected_methods(all).include?(method_name)
+          :protected
+        elsif base_object.private_methods(all).include?(method_name)
           :private
         end
-    end
-
-    def base_object_respond_to?(method_name, include_private = false)
-      if @singleton_method
-        base_object.respond_to?(method_name, include_private)
       else
-        base_object.instance_methods.include?(method_name) || (
-          include_private && base_object.private_instance_methods.include?(method_name)
-        )
+        if base_object.public_instance_methods(all).include?(method_name)
+          :public
+        elsif base_object.protected_instance_methods(all).include?(method_name)
+          :protected
+        elsif base_object.private_instance_methods(all).include?(method_name)
+          :private
+        end
       end
     end
 

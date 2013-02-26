@@ -50,6 +50,18 @@ class Pen
     def another
       "another"
     end
+
+    def public_method
+    end
+
+    protected
+    def protected_method
+    end
+
+    private
+    def private_method
+    end
+
   end
 end
 
