@@ -76,10 +76,10 @@ module Spy
           Constant.on(base_module, constant_name)
         when Hash
           constant_name.map do |name, result|
-            on_const(base_module, name).and_return(result)
+            Constant.on(base_module, name).and_return(result)
           end
         else
-          raise ArgumentError.new "#{constant_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"
+          raise ArgumentError.new "#{constant_name.class} is an invalid input, #on only accepts Symbol, and Hash"
         end
       end.flatten
 
@@ -98,7 +98,7 @@ module Spy
 
       spies = constant_names.map do |constant_name|
         unless constant_name.is_a?(Symbol)
-          raise ArgumentError.new "#{constant_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"
+          raise ArgumentError.new "#{constant_name.class} is an invalid input, #on only accepts Symbol, and Hash"
         end
         Constant.off(base_module, constant_name)
       end
