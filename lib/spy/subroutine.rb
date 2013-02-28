@@ -6,6 +6,9 @@ module Spy
     # @!attribute [r] method_name
     #   @return [Symbol] the name of the method that is being watched
     #
+    # @!attribute [r] singleton_method
+    #   @return [Boolean] if the spied method is a singleton_method or not
+    #
     # @!attribute [r] calls
     #   @return [Array<CallLog>] the messages that have been sent to the method
     #
@@ -19,7 +22,7 @@ module Spy
     #   @return [Hash] the options that were sent when it was hooked
 
 
-    attr_reader :base_object, :method_name, :calls, :original_method, :hook_opts, :original_method_visibility
+    attr_reader :base_object, :method_name, :singleton_method, :calls, :original_method, :original_method_visibility, :hook_opts
 
     # set what object and method the spy should watch
     # @param object
@@ -48,7 +51,7 @@ module Spy
         @original_method = current_method
       end
 
-      define_method_with = @singleton_method ? :define_singleton_method : :define_method
+      define_method_with = singleton_method ? :define_singleton_method : :define_method
       base_object.send(define_method_with, method_name, override_method)
 
       if [:public, :protected, :private].include? hook_opts[:visibility]
@@ -80,7 +83,7 @@ module Spy
     # is the spy hooked?
     # @return [Boolean]
     def hooked?
-      self == self.class.get(base_object, method_name, @singleton_method)
+      self == self.class.get(base_object, method_name, singleton_method)
     end
 
     # @overload and_return(value)
@@ -235,7 +238,7 @@ module Spy
     end
 
     def method_visibility_of(method_name, all = true)
-      if @singleton_method
+      if singleton_method
         if base_object.public_methods(all).include?(method_name)
           :public
         elsif base_object.protected_methods(all).include?(method_name)
@@ -294,7 +297,7 @@ module Spy
     end
 
     def current_method
-      @singleton_method ? base_object.method(method_name) : base_object.instance_method(method_name)
+      singleton_method ? base_object.method(method_name) : base_object.instance_method(method_name)
     end
 
     def method_owner
