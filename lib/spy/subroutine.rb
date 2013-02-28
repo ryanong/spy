@@ -37,9 +37,9 @@ module Spy
     # @option opts [Symbol<:public, :protected, :private>] visibility overrides visibility with whatever method is given
     # @return [self]
     def hook(opts = {})
-      @hook_opts = opts
       raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
 
+      @hook_opts = opts
       @original_method_visibility = method_visibility_of(method_name)
       hook_opts[:visibility] ||= original_method_visibility
       hook_opts[:force] ||= base_object.is_a?(Double)
@@ -48,6 +48,7 @@ module Spy
         @original_method = current_method
       end
 
+      define_method_with = @singleton_method ? :define_singleton_method : :define_method
       base_object.send(define_method_with, method_name, override_method)
 
       if [:public, :protected, :private].include? hook_opts[:visibility]
@@ -251,10 +252,6 @@ module Spy
           :private
         end
       end
-    end
-
-    def define_method_with
-      @singleton_method ? :define_singleton_method : :define_method
     end
 
     def check_arity!(arity)
