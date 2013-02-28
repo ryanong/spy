@@ -212,6 +212,9 @@ module Spy
 
     private
 
+    # this returns a lambda that calls the spy object.
+    # we use eval to set the spy object id as a parameter so it can be extracted
+    # and looked up later using `Method#parameters`
     def override_method
       eval <<-METHOD, binding, __FILE__, __LINE__ + 1
       __method_spy__ = self
