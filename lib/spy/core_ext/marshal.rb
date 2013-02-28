@@ -9,15 +9,14 @@ module Marshal
       end
 
       spy_hook_options = spies.map do |spy|
-        opts = spy.opts
-        [spy.unhook, opts]
+        [spy.hook_opts, spy.unhook]
       end
 
       begin
         dump_without_mocks(*args.unshift(object.dup))
       ensure
-        spy_hook_options.each do |spy, opts|
-          spy.hook(opts)
+        spy_hook_options.each do |hook_opts, spy|
+          spy.hook(hook_opts)
         end
       end
     end
