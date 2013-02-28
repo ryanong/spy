@@ -12,11 +12,14 @@ module Spy
     # @!attribute [r] original_method
     #   @return [Method] the original method that was hooked if it existed
     #
+    # @!attribute [r] original_method_visibility
+    #   @return [Method] the original visibility of the method that was hooked if it existed
+    #
     # @!attribute [r] hook_opts
     #   @return [Hash] the options that were sent when it was hooked
 
 
-    attr_reader :base_object, :method_name, :calls, :original_method, :hook_opts
+    attr_reader :base_object, :method_name, :calls, :original_method, :hook_opts, :original_method_visibility
 
     # set what object and method the spy should watch
     # @param object
@@ -37,8 +40,9 @@ module Spy
       @hook_opts = opts
       raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
 
-      hook_opts[:force] ||= base_object.is_a?(Double)
+      @original_method_visibility = method_visibility_of(method_name)
       hook_opts[:visibility] ||= original_method_visibility
+      hook_opts[:force] ||= base_object.is_a?(Double)
 
       if original_method_visibility || !hook_opts[:force]
         @original_method = current_method
@@ -227,10 +231,6 @@ module Spy
     def clear_method!
       @hooked = @do_not_check_plan_arity = false
       @hook_opts = @original_method = @arity_range = @original_method_visibility = @method_owner= nil
-    end
-
-    def original_method_visibility
-      @original_method_visibility ||= method_visibility_of(method_name)
     end
 
     def method_visibility_of(method_name, all = true)
