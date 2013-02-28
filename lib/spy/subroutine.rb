@@ -61,11 +61,12 @@ module Spy
       raise "'#{method_name}' method has not been hooked" unless hooked?
 
       if original_method && method_owner == original_method.owner
-        original_method.owner.send(:define_method, method_name, original_method)
-        original_method.owner.send(original_method_visibility, method_name) if original_method_visibility
+        method_owner.send(:define_method, method_name, original_method)
+        method_owner.send(original_method_visibility, method_name) if original_method_visibility
       else
         method_owner.send(:remove_method, method_name)
       end
+
       clear_method!
       Agency.instance.retire(self)
       self
