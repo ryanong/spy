@@ -32,7 +32,7 @@ Fail faster, code faster.
 ## Why not to use this
 
 * mocking null objects is not supported(yet)
-* no argument matchers for Spy::Method#has\_been\_called\_with
+* no argument matchers for `Spy::Subroutine#has_been_called_with`
 * cannot watch all calls to an object to check order in which they are called
 * cannot transfer nested constants when stubbing a constant
   * i don't think anybody uses this anyway
@@ -78,7 +78,8 @@ You can force the creation of a stub on method that didn't exist but it really i
 Spy.new(book, :flamethrower).hook(force:true).and_return("burnninante")
 ```
 
-You can also stub instance methods of Classes and Modules
+You can also stub instance methods of Classes and Modules. This is equivalent to
+rspec-mock's `Module#any_instance`
 
 ```ruby
 Spy.on_instance_method(Book, :title).and_return("Cannery Row")
@@ -105,7 +106,7 @@ Spy.double("book", title: "Grapes of Wrath", author: "John Steinbeck")
 
 ### Arbitrary Handling
 
-If you need to have a custom method based in the method inputs just send a block to #and\_return
+If you need to have a custom method based in the method inputs just send a block to `#and_return`
 
 ```ruby
 Spy.on(book, :read_page).and_return do |page, &block|
@@ -142,13 +143,13 @@ Spy.get(validator, :validate)
 ```
 
 ### Calling through
-If you just want to make sure if a method is called and not override the output you can just use the and\_call\_through method
+If you just want to make sure if a method is called and not override the output you can just use the `#and_call_through` method
 
 ```ruby
 Spy.on(book, :read_page).and_call_through
 ```
 
-By if the original method never existed it will call #method\_missing on the spied object.
+By if the original method never existed it will call `#method_missing` on the spied object.
 
 ### Call Logs
 
@@ -170,6 +171,8 @@ first_call.called_from #=> "file_name.rb:line_number"
 
 ### MiniTest
 
+In `test_helper.rb`
+
 ```ruby
 require "spy"
 MiniTest::TestCase.add_teardown_hook { Spy.teardown }
@@ -177,7 +180,7 @@ MiniTest::TestCase.add_teardown_hook { Spy.teardown }
 
 ### Rspec
 
-In spec\_helper.rb
+In `spec_helper.rb`
 
 ```ruby
 require "rspec/autorun"
