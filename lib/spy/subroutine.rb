@@ -83,10 +83,29 @@ module Spy
     #
     # Tells the spy to return a value when the method is called.
     #
+    # If a block is sent it will execute the block when the method is called.
+    # The airty of the block will be checked against the original method when
+    # you first call `and_return` and when the method is called.
+    #
+    # If you want to disable the arity checking just pass `{force: true}` to the
+    # value
+    #
+    # @example
+    #   spy.and_return(true)
+    #   spy.and_return { true }
+    #   spy.and_return(force: true) { |invalid_arity| true }
+    #
     # @return [self]
     def and_return(value = nil)
-      raise ArgumentError.new("value and block conflict. Choose one") if !(value.nil? || value.is_a?(Hash) && value.has_key?(:force)) && block_given?
+      @do_not_check_plan_arity = false
+
       if block_given?
+        if value.is_a?(Hash) && value.has_key?(:force)
+          @do_not_check_plan_arity = !!value[:force]
+        elsif !value.nil?
+          raise ArgumentError.new("value and block conflict. Choose one")
+        end
+
         @plan = Proc.new
         check_for_too_many_arguments!(@plan)
       else
@@ -203,7 +222,7 @@ module Spy
     end
 
     def clear_method!
-      @hooked = false
+      @hooked = @do_not_check_plan_arity = false
       @hook_opts = @original_method = @arity_range = @original_method_visibility = @method_owner= nil
     end
 
@@ -242,10 +261,11 @@ module Spy
       elsif arity > arity_range.max
         raise ArgumentError.new("wrong number of arguments (#{arity} for #{arity_range.max})")
       end
+      true
     end
 
     def check_for_too_many_arguments!(block)
-      return unless arity_range
+      return if @do_not_check_plan_arity || arity_range.nil?
       min_arity = block.arity
       min_arity = min_arity.abs - 1 if min_arity < 0
 

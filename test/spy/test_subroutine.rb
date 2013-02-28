@@ -107,6 +107,9 @@ module Spy
         write_spy.and_return do |string, b|
         end
       end
+
+      write_spy.and_return(force: true) do |string, b|
+      end
     end
 
     def test_spy_and_return_can_call_a_block_that_recieves_a_block
