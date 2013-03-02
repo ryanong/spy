@@ -444,7 +444,7 @@ module Spy
 
     context 'when used in conjunction with a `dup`' do
       it "doesn't cause an infinite loop" do
-        Object.any_instance.stub(:some_method)
+        Spy::Subroutine.new(Object, :some_method, false).hook(force: true)
         o = Object.new
         o.some_method
         expect { o.dup.some_method }.to_not raise_error(SystemStackError)
@@ -454,7 +454,7 @@ module Spy
         klass = Class.new do
           undef_method :dup
         end
-        klass.any_instance
+        Spy::Subroutine.new(Object, :some_method, false).hook(force: true)
       end
 
       it "doesn't fail when dup accepts parameters" do
@@ -463,7 +463,7 @@ module Spy
           end
         end
 
-        klass.any_instance
+        Spy::Subroutine.new(Object, :some_method, false).hook(force: true)
 
         expect { klass.new.dup('Dup dup dup') }.to_not raise_error(ArgumentError)
       end
