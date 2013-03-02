@@ -176,6 +176,19 @@ In `test_helper.rb`
 ```ruby
 require "spy"
 MiniTest::TestCase.add_teardown_hook { Spy.teardown }
+
+
+class TestBook < MiniTest::Unit::TestCase
+  def test_title
+    book = book.new
+    title_spy = spy.on(book, title)
+    book.title
+    book.title
+
+    assert title_spy.has_been_called?
+    assert_equal 2, title_spy.calls.count
+  end
+end
 ```
 
 ### Rspec
@@ -188,6 +201,18 @@ require "spy"
 RSpec.configure do |c|
   c.after { Spy.teardown  }
   c.mock_with :absolutely_nothing # this is completely optional.
+end
+
+describe Book do
+  it "title can be called" do
+    book = book.new
+    title_spy = spy.on(book, title)
+    book.title
+    book.title
+
+    expect(title_spy).to have_been_called
+    expect(title_spy.calls.count).to eq(2)
+  end
 end
 ```
 
