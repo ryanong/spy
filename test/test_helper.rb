@@ -2,6 +2,8 @@ require 'bundler/setup'
 require 'minitest/autorun'
 require 'pry'
 require 'pry-nav'
+require 'coveralls'
+Coveralls.wear!
 
 require 'spy'
 

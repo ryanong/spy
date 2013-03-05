@@ -1,4 +1,8 @@
-# Spy [![Build Status](https://travis-ci.org/ryanong/spy.png?branch=master)](https://travis-ci.org/ryanong/spy) [![Gem Version](https://badge.fury.io/rb/spy.png)](http://badge.fury.io/rb/spy)
+# Spy
+[![Gem Version](https://badge.fury.io/rb/spy.png)](http://badge.fury.io/rb/spy)
+[![Build Status](https://travis-ci.org/ryanong/spy.png?branch=master)](https://travis-ci.org/ryanong/spy)
+[![Coverage Status](https://coveralls.io/repos/ryanong/spy/badge.png?branch=master)](https://coveralls.io/r/ryanong/spy)
+
 
 [Docs](http://rdoc.info/gems/spy/frames)
 
