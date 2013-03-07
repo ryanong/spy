@@ -26,7 +26,7 @@ module Spy
       when Subroutine,  Constant, Double
         @spies[spy.object_id] = spy
       else
-        raise "Not a spy"
+        raise ArgumentError, "#{spy}, was not a spy"
       end
     end
 
@@ -38,7 +38,7 @@ module Spy
       when Subroutine,  Constant, Double
         @spies.delete(spy.object_id)
       else
-        raise "Not a spy"
+        raise ArgumentError, "#{spy}, was not a spy"
       end
     end
 
@@ -50,7 +50,7 @@ module Spy
       when Subroutine,  Constant, Double
         @spies.has_key?(spy.object_id)
       else
-        raise "Not a spy"
+        raise ArgumentError, "#{spy}, was not a spy"
       end
     end
 

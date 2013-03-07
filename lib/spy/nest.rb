@@ -12,7 +12,7 @@ module Spy
     attr_reader :base_module, :hooked_constants
 
     def initialize(base_module)
-      raise "#{base_module} is not a kind of Module" unless base_module.is_a?(Module)
+      raise ArgumentError, "#{base_module} is not a kind of Module" unless base_module.is_a?(Module)
       @base_module = base_module
       @hooked_constants = {}
     end
@@ -22,7 +22,7 @@ module Spy
     # @return [self]
     def add(spy)
       if @hooked_constants[spy.constant_name]
-        raise "#{spy.constant_name} has already been stubbed"
+        raise AlreadyStubbedError, "#{spy.constant_name} has already been stubbed"
       else
         @hooked_constants[spy.constant_name] = spy
       end
@@ -36,7 +36,7 @@ module Spy
       if @hooked_constants[spy.constant_name] == spy
         @hooked_constants.delete(spy.constant_name)
       else
-        raise "#{spy.constant_name} was never added"
+        raise NoSpyError, "#{spy.constant_name} was not stubbed on #{base_module.name}"
       end
       self
     end

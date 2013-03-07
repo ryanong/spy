@@ -16,8 +16,8 @@ module Spy
     # @param base_module [Module] the module this spy should be on
     # @param constant_name [Symbol] the constant this spy is watching
     def initialize(base_module, constant_name)
-      raise "#{base_module.inspect} is not a kind of Module" unless base_module.is_a? Module
-      raise "#{constant_name.inspect} is not a kind of Symbol" unless constant_name.is_a? Symbol
+      raise ArgumentError, "#{base_module.inspect} is not a kind of Module" unless base_module.is_a? Module
+      raise ArgumentError, "#{constant_name.inspect} is not a kind of Symbol" unless constant_name.is_a? Symbol
       @base_module, @constant_name = base_module, constant_name.to_sym
       @original_value = @new_value = @previously_defined = nil
     end

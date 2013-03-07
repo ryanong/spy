@@ -40,7 +40,7 @@ module Spy
     # @option opts [Symbol<:public, :protected, :private>] visibility overrides visibility with whatever method is given
     # @return [self]
     def hook(opts = {})
-      raise "#{base_object} method '#{method_name}' has already been hooked" if hooked?
+      raise AlreadyHookedError, "#{base_object} method '#{method_name}' has already been hooked" if hooked?
 
       @hook_opts = opts
       @original_method_visibility = method_visibility_of(method_name)
@@ -66,7 +66,7 @@ module Spy
     # unhooks method from object
     # @return [self]
     def unhook
-      raise "'#{method_name}' method has not been hooked" unless hooked?
+      raise NeverHookedError, "'#{method_name}' method has not been hooked" unless hooked?
 
       if original_method && method_owner == original_method.owner
         method_owner.send(:define_method, method_name, original_method)
@@ -111,7 +111,7 @@ module Spy
         if value.is_a?(Hash) && value.has_key?(:force)
           @do_not_check_plan_arity = !!value[:force]
         elsif !value.nil?
-          raise ArgumentError.new("value and block conflict. Choose one")
+          raise ArgumentError, "value and block conflict. Choose one"
         end
 
         @plan = Proc.new
@@ -184,7 +184,7 @@ module Spy
     # if the method was called it will return true
     # @return [Boolean]
     def has_been_called?
-      raise "was never hooked" unless @was_hooked
+      raise NeverHookedError unless @was_hooked
       calls.size > 0
     end
 
@@ -192,7 +192,7 @@ module Spy
     # @param args Arguments that should have been sent to the method
     # @return [Boolean]
     def has_been_called_with?(*args)
-      raise "was never hooked" unless @was_hooked
+      raise NeverHookedError unless @was_hooked
       calls.any? do |call_log|
         call_log.args == args
       end

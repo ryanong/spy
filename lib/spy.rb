@@ -3,6 +3,7 @@ require "spy/agency"
 require "spy/call_log"
 require "spy/constant"
 require "spy/double"
+require "spy/exceptions"
 require "spy/nest"
 require "spy/subroutine"
 require "spy/version"
@@ -32,7 +33,7 @@ module Spy
         if spy
           spy.unhook
         else
-          raise "#{spy.inspect} was not found to be hooked"
+          raise NoSpyError, "#{method_name} was not hooked on #{base_object.inspect}."
         end
       end
 
@@ -54,7 +55,7 @@ module Spy
         if spy
           spy.unhook
         else
-          raise "#{spy.inspect} was not found to be hooked"
+          raise NoSpyError, "#{method_name} was not hooked on #{base_object.inspect}."
         end
       end
 
@@ -79,7 +80,7 @@ module Spy
             Constant.on(base_module, name).and_return(result)
           end
         else
-          raise ArgumentError.new "#{constant_name.class} is an invalid input, #on only accepts Symbol, and Hash"
+          raise ArgumentError, "#{constant_name.class} is an invalid input, #on only accepts Symbol, and Hash"
         end
       end.flatten
 
@@ -98,7 +99,7 @@ module Spy
 
       spies = constant_names.map do |constant_name|
         unless constant_name.is_a?(Symbol)
-          raise ArgumentError.new "#{constant_name.class} is an invalid input, #on only accepts Symbol, and Hash"
+          raise ArgumentError, "#{constant_name.class} is an invalid input, #on only accepts Symbol, and Hash"
         end
         Constant.off(base_module, constant_name)
       end
@@ -157,7 +158,7 @@ module Spy
           create_and_hook_spy(base_object, name, singleton_method, hook_opts).and_return(result)
         end
       else
-        raise ArgumentError.new "#{method_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"
+        raise ArgumentError, "#{method_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"
       end
     end
   end
