@@ -44,6 +44,7 @@ Fail faster, code faster.
 * #with is not supported
   * you can usually just check the call logs.
   * if you do need to use this. It is probably a code smell. You either need to abstract your method more or add separate tests.
+* you use `mock_model` and `stub_model` (I want to impliment this soon)
 
 ## Installation
 
