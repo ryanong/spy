@@ -305,7 +305,24 @@ module Spy
     end
 
     class << self
-      # retrieve the method spy from an object
+
+      # retrieve the method spy from an object or create a new one
+      # @param base_object
+      # @param method_name [Symbol]
+      # @param singleton_method [Boolean] this a singleton method or a instance method?
+      # @return [Array<Subroutine>]
+      def on(base_object, method_name, singleton_method = true)
+        get(base_object, method_name, singleton_method) ||
+          new(base_object, method_name, singleton_method).hook
+      end
+
+      def off(base_object, method_name, singleton_method = true)
+        spy = get(base_object, method_name, singleton_method = true)
+        raise NoSpyError, "#{method_name} was not spied on #{base_object}" unless spy
+        spy.unhook
+      end
+
+      # retrieve the method spy from an object or return nil
       # @param base_object
       # @param method_name [Symbol]
       # @param singleton_method [Boolean] this a singleton method or a instance method?

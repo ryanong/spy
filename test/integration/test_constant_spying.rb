@@ -30,6 +30,7 @@ class TestConstantSpying < MiniTest::Unit::TestCase
     assert_equal "hello world", Foo.hello
 
     spy = Spy.on_const(Foo, :HELLO)
+    assert_same spy, Spy.on_const(Foo, :HELLO)
     assert_equal nil, Foo.hello
     spy.and_return("awesome")
     assert_equal "awesome", Foo.hello

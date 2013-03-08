@@ -10,7 +10,6 @@ module Spy
       clear!
     end
 
-
     # given a spy ID it will return the associated spy
     # @param id [Integer] spy object id
     # @return [Nil, Subroutine, Constant, Double]
@@ -22,6 +21,7 @@ module Spy
     # @param spy [Subroutine, Constant, Double]
     # @return [spy]
     def recruit(spy)
+      raise AlreadyStubbedError if @spies[spy.object_id]
       case spy
       when Subroutine,  Constant, Double
         @spies[spy.object_id] = spy
@@ -34,6 +34,7 @@ module Spy
     # @param spy [Subroutine, Constant, Double]
     # @return [spy]
     def retire(spy)
+      raise NoSpyError unless @spies[spy.object_id]
       case spy
       when Subroutine,  Constant, Double
         @spies.delete(spy.object_id)

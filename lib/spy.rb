@@ -149,13 +149,13 @@ module Spy
 
     private
 
-    def create_and_hook_spy(base_object, method_name, singleton_method = true, hook_opts = {})
+    def create_and_hook_spy(base_object, method_name, singleton_method = true)
       case method_name
       when String, Symbol
-        Subroutine.new(base_object, method_name, singleton_method).hook(hook_opts)
+        Subroutine.on(base_object, method_name, singleton_method)
       when Hash
         method_name.map do |name, result|
-          create_and_hook_spy(base_object, name, singleton_method, hook_opts).and_return(result)
+          Subroutine.on(base_object, name, singleton_method).and_return(result)
         end
       else
         raise ArgumentError, "#{method_name.class} is an invalid input, #on only accepts String, Symbol, and Hash"

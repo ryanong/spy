@@ -97,17 +97,20 @@ module Spy
     end
 
     class << self
-      # creates a new constant spy and hooks the constant
+      # finds existing spy or creates a new constant spy and hooks the constant
       # @return [Constant]
       def on(base_module, constant_name)
-        new(base_module, constant_name).hook
+        get(base_module, constant_name) ||
+          new(base_module, constant_name).hook
       end
 
       # retrieves the spy for given constant and module and unhooks the constant
       # from the module
       # @return [Constant]
       def off(base_module, constant_name)
-        get(base_module, constant_name).unhook
+        spy = get(base_module, constant_name)
+        raise NoSpyError, "#{constant_name} was not spied on #{base_module}" unless spy
+        spy.unhook
       end
 
       # retrieves the spy for given constnat and module or returns nil
@@ -115,7 +118,7 @@ module Spy
       def get(base_module, constant_name)
         nest = Nest.get(base_module)
         if nest
-          nest.hooked_constants[constant_name]
+          nest.get(constant_name)
         end
       end
     end

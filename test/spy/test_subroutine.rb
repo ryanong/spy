@@ -226,8 +226,23 @@ module Spy
     def test_spy_get_can_retrieve_a_spy
       pen_write_spy = spy_on(@pen, :write).and_return(:hello)
       assert_equal :hello, @pen.write(:world)
-      assert_equal pen_write_spy, Subroutine.get(@pen, :write)
       assert Subroutine.get(@pen, :write).has_been_called?
+      assert_same pen_write_spy, Subroutine.get(@pen, :write)
+    end
+
+    def test_spy_on_retrieves_old_spy
+      pen_write_spy = spy_on(@pen, :write).and_return(:hello)
+      assert_equal :hello, @pen.write(:world)
+      assert Subroutine.on(@pen, :write).has_been_called?
+      assert_same pen_write_spy, Subroutine.on(@pen, :write)
+    end
+
+    def test_spy_on_retrieves_creates_new_spy
+      assert_nil Spy.get(@pen, :write)
+      pen_write_spy = Spy.on(@pen, :write).and_return(:hello)
+      assert_equal :hello, @pen.write(:world)
+      assert Subroutine.on(@pen, :write).has_been_called?
+      assert_same pen_write_spy, Subroutine.on(@pen, :write)
     end
   end
 end
