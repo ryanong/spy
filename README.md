@@ -80,7 +80,7 @@ Spy will raise an error if you try to stub on a method that doesn't exist.
 You can force the creation of a stub on method that didn't exist but it really isn't suggested.
 
 ```ruby
-Spy.new(book, :flamethrower).hook(force:true).and_return("burnninante")
+Spy::Subroutine.new(book, :flamethrower).hook(force:true).and_return("burnninante")
 ```
 
 You can also stub instance methods of Classes and Modules. This is equivalent to
