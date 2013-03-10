@@ -2,8 +2,8 @@ require "spy/core_ext/marshal"
 require "spy/agency"
 require "spy/call_log"
 require "spy/constant"
-require "spy/double"
 require "spy/exceptions"
+require "spy/mock"
 require "spy/nest"
 require "spy/subroutine"
 require "spy/version"
@@ -110,12 +110,6 @@ module Spy
     # unhook all methods
     def teardown
       Agency.instance.dissolve!
-    end
-
-    # returns a double
-    # (see Double#initizalize)
-    def double(*args)
-      Double.new(*args)
     end
 
     # retrieve the spy from an object

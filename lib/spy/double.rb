@@ -1,4 +1,10 @@
 module Spy
+  # returns a double
+  # (see Double#initizalize)
+  def self.double(*args)
+    Double.new(*args)
+  end
+
   class Double
     def initialize(name, *args)
       @name = name

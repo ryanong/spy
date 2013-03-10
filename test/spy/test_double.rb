@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'spy/double'
 
 module Spy
   class TestDouble < MiniTest::Unit::TestCase
