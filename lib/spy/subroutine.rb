@@ -365,10 +365,8 @@ module Spy
 
       def get_spy_id(method)
         return nil unless method.parameters[0].is_a?(Array)
-        first_param_name = method.parameters[0][1].to_s
-        if first_param_name.include?("__spy_args")
-          first_param_name.split("_").last.to_i
-        end
+        id = method.parameters[0][1].to_s.sub!("__spy_args_", "")
+        id.to_i if id
       end
     end
   end
