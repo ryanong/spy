@@ -40,7 +40,7 @@ module Spy
     # @option opts [Symbol<:public, :protected, :private>] visibility overrides visibility with whatever method is given
     # @return [self]
     def hook(opts = {})
-      raise AlreadyHookedError, "#{base_object} method '#{method_name}' has already been hooked" if hooked?
+      raise AlreadyHookedError, "#{base_object} method '#{method_name}' has already been hooked" if self.class.get(base_object, method_name, singleton_method)
 
       @hook_opts = opts
       @original_method_visibility = method_visibility_of(method_name)
@@ -312,8 +312,7 @@ module Spy
       # @param singleton_method [Boolean] this a singleton method or a instance method?
       # @return [Array<Subroutine>]
       def on(base_object, method_name, singleton_method = true)
-        get(base_object, method_name, singleton_method) ||
-          new(base_object, method_name, singleton_method).hook
+        new(base_object, method_name, singleton_method).hook
       end
 
       def off(base_object, method_name, singleton_method = true)

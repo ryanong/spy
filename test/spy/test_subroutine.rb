@@ -230,19 +230,11 @@ module Spy
       assert_same pen_write_spy, Subroutine.get(@pen, :write)
     end
 
-    def test_spy_on_retrieves_old_spy
-      pen_write_spy = spy_on(@pen, :write).and_return(:hello)
-      assert_equal :hello, @pen.write(:world)
-      assert Subroutine.on(@pen, :write).has_been_called?
-      assert_same pen_write_spy, Subroutine.on(@pen, :write)
-    end
-
-    def test_spy_on_retrieves_creates_new_spy
-      assert_nil Spy.get(@pen, :write)
-      pen_write_spy = Spy.on(@pen, :write).and_return(:hello)
-      assert_equal :hello, @pen.write(:world)
-      assert Subroutine.on(@pen, :write).has_been_called?
-      assert_same pen_write_spy, Subroutine.on(@pen, :write)
+    def test_spy_hook_raises_an_error_on_an_already_hooked_method
+      spy_on(@pen, :write)
+      assert_raises AlreadyHookedError do
+        spy_on(@pen, :write)
+      end
     end
   end
 end

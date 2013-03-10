@@ -100,8 +100,7 @@ module Spy
       # finds existing spy or creates a new constant spy and hooks the constant
       # @return [Constant]
       def on(base_module, constant_name)
-        get(base_module, constant_name) ||
-          new(base_module, constant_name).hook
+        new(base_module, constant_name).hook
       end
 
       # retrieves the spy for given constant and module and unhooks the constant
