@@ -6,7 +6,7 @@
 
 [Docs](http://rdoc.info/gems/spy/frames)
 
-Spy is a lightweight stubbing framework with support for method spies, constant stubs, and object doubles.
+Spy is a lightweight stubbing framework with support for method spies, constant stubs, and object mocks.
 
 Spy was designed for 1.9.3+.
 
@@ -91,6 +91,19 @@ Spy.on_instance_method(Book, :title).and_return("Cannery Row")
 
 Book.new(title: "Siddhartha").title   #=> "Cannery Row"
 Book.new(title: "The Big Cheese").title   #=> "Cannery Row"
+```
+
+### Test Mocks
+
+A test mock is an object that quacks like a given class but will raise an error
+when the method is not stubbed.
+
+```ruby
+book = Spy.mock(Book, author: "Gaiman")
+
+book.author #=> "Gaiman"
+book.responds_to? :title #=> true
+book.title #=> Spy::NeverHookedError: 'title' was never hooked on mock spy.
 ```
 
 ### Test Doubles

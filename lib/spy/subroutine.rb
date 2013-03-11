@@ -361,8 +361,7 @@ module Spy
         end.compact
       end
 
-      private
-
+      # @private
       def get_spy_id(method)
         return nil unless method.parameters[0].is_a?(Array)
         id = method.parameters[0][1].to_s.sub!("__spy_args_", "")
