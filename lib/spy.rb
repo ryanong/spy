@@ -107,6 +107,14 @@ module Spy
       spies.size > 1 ? spies : spies.first
     end
 
+    def mock(klass, *stubs)
+      new_mock = Mock.new(klass).new
+      if stubs.size > 0
+        Spy.on(new_mock, *stubs)
+      end
+      new_mock
+    end
+
     # unhook all methods
     def teardown
       Agency.instance.dissolve!

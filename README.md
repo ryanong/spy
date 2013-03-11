@@ -96,21 +96,33 @@ Book.new(title: "The Big Cheese").title   #=> "Cannery Row"
 ### Test Mocks
 
 A test mock is an object that quacks like a given class but will raise an error
-when the method is not stubbed.
+when the method is not stubbed. You can spy on the classes and call through to
+the original method.
 
 ```ruby
-book = Spy.mock(Book, author: "Gaiman")
+book = Spy.mock(Book)
+Spy.on(book, first_name: "Neil", last_name: "Gaiman")
+Spy.on(book, :author).and_call_through
+book.author #=> "Neil Gaiman"
 
-book.author #=> "Gaiman"
 book.responds_to? :title #=> true
 book.title #=> Spy::NeverHookedError: 'title' was never hooked on mock spy.
 ```
 
+To stub methods during instantiation just add arguments.
+
+```ruby
+book = Spy.mock(book, :first_name, author: "Neil Gaiman")
+```
+
 ### Test Doubles
 
+You really shouldn't use these and use Mocks as much as possible. If you really
+want to use it you must require `spy/double`.
 A test double is an object that stands in for a real object.
 
 ```ruby
+require 'spy/double'
 Spy.double("book")
 ```
 

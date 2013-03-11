@@ -1,11 +1,4 @@
 module Spy
-  def self.mock(klass, *classes_not_to_override)
-    # @param klass [Class] the Class you with the Mock to mock.
-    klass = klass
-    mock_object = Mock.new(klass)
-    mock_object.new
-  end
-
   # A Mock is an object that has all the same methods as the given class.
   # Each method however will raise a NeverHookedError if it hasn't been stubbed.
   # If you attempt to stub a method on the mock that doesn't exist on the
@@ -22,7 +15,6 @@ module Spy
 
         mock_klass = Class.new(klass)
         mock_klass.class_exec do
-          @@overridden_methods = {}
           def initialize
           end
 
@@ -74,8 +66,6 @@ module Spy
 
                 #{visibility} :#{method_name}
               DEF_METHOD
-
-              @@overridden_methods[method_name] = true
             end
           end
         end
