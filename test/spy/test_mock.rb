@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'spy/test_subroutine'
+
 module Spy
   class TestMock < MiniTest::Unit::TestCase
     class BluePen < Pen
@@ -8,7 +8,7 @@ module Spy
     end
 
     def setup
-      @pen = Spy::Mock.new(BluePen)
+      @pen = Spy.mock(BluePen)
     end
 
     def teardown
@@ -26,7 +26,7 @@ module Spy
 
     def test_raises_error_on_unstubbed_method
       assert_raises Spy::NeverHookedError do
-        @pen.write(nil)
+        @pen.write("")
       end
     end
 
@@ -55,6 +55,15 @@ module Spy
 
       assert_raises ArgumentError do
         @pen.greet("hello", "bob", "error")
+      end
+    end
+
+    def test_that_and_call_original_works
+      Spy.on(@pen, :another).and_call_through
+      assert_equal "another", @pen.another
+      Spy.off(@pen, :another)
+      assert_raises Spy::NeverHookedError do
+        @pen.another
       end
     end
   end

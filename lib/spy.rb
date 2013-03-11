@@ -107,18 +107,6 @@ module Spy
       spies.size > 1 ? spies : spies.first
     end
 
-    # creates a mock object from a given class
-    # @param klass [Class]
-    # @param args *[Hash, Symbol]
-    # @return [Mock]
-    def mock(klass, *args)
-      mock = Mock.new(klass)
-      if args.size > 0
-        Spy.on(mock,*args)
-      end
-      mock
-    end
-
     # unhook all methods
     def teardown
       Agency.instance.dissolve!
