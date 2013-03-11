@@ -6,52 +6,56 @@ module Spy
   module Mock
     CLASSES_NOT_TO_OVERRIDE = [Enumerable, Numeric, Comparable, Class, Module, Object, Kernel, BasicObject]
 
+    def initialize
+    end
+
+    def is_a?(other)
+      self.class.ancestors.include?(other)
+    end
+
+    alias :kind_of? :is_a?
+
+    def instance_of?(other)
+      other == self.class
+    end
+
+    def method(method_name)
+      new_method = super
+      if new_method.parameters.size >= 1 &&
+        new_method.parameters.last.last == :never_hooked
+
+        begin
+          _mock_class.send(:remove_method, method_name)
+          real_method = super
+        ensure
+          _mock_class.send(:define_method, method_name, new_method)
+        end
+
+        real_method
+      else
+        new_method
+      end
+    end
+
     class << self
+
+      def included(mod)
+      end
       def new(klass)
         method_classes = klass.ancestors
-        method_classes -= Mock::CLASSES_NOT_TO_OVERRIDE
+        method_classes -= CLASSES_NOT_TO_OVERRIDE
         method_classes << klass
         method_classes.uniq!
 
         mock_klass = Class.new(klass)
         mock_klass.class_exec do
-          def initialize
-          end
+          include Mock
 
-          define_method(:is_a?) do |other|
-            klass.ancestors.include?(other)
-          end
-
-          define_method(:kind_of?) do |other|
-            klass.ancestors.include?(other)
-          end
-
-          define_method(:instance_of?) do |other|
-            other == klass
-          end
+          alias :_mock_class :class
+          private :_mock_class
 
           define_method(:class) do
             klass
-          end
-
-          alias :_original_method :method
-          define_method(:method) do |method_name|
-            new_method = _original_method(method_name)
-            if new_method &&
-              new_method.parameters.size >= 1 &&
-              new_method.parameters.last.last == :never_hooked
-
-              begin
-                mock_klass.send(:remove_method, method_name)
-                real_method = _original_method(method_name)
-              ensure
-                mock_klass.send(:define_method, method_name, new_method)
-              end
-
-              real_method
-            else
-              new_method
-            end
           end
 
           [:public, :protected, :private].each do |visibility|
