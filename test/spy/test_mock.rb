@@ -1,15 +1,61 @@
+require 'test_helper'
+require 'spy/test_subroutine'
 module Spy
   class TestMock < MiniTest::Unit::TestCase
-
-    def setup
-      @pen = Spy::Mock.new(Pen)
+    class BluePen < Pen
+      def write_hello(other)
+      end
     end
 
-    def test_mock_class_methods
+    def setup
+      @pen = Spy::Mock.new(BluePen)
+    end
+
+    def teardown
+      Spy::Agency.instance.dissolve!
+    end
+
+    def test_class_methods
+      assert @pen.kind_of?(BluePen)
       assert @pen.kind_of?(Pen)
       assert @pen.is_a?(Pen)
-      assert @pen.instance_of?(Pen)
-      assert_equal Pen, @pen.class
+      assert @pen.is_a?(BluePen)
+      assert @pen.instance_of?(BluePen)
+      assert_equal BluePen, @pen.class
+    end
+
+    def test_raises_error_on_unstubbed_method
+      assert_raises Spy::NeverHookedError do
+        @pen.write(nil)
+      end
+    end
+
+    def test_mimics_visibility
+      assert @pen.singleton_class.public_method_defined? :public_method
+      assert @pen.singleton_class.protected_method_defined? :protected_method
+      assert @pen.singleton_class.private_method_defined? :private_method
+    end
+
+    def test_that_method_spy_keeps_arity
+      assert_raises ArgumentError do
+        @pen.write
+      end
+
+      assert_raises ArgumentError do
+        @pen.write("hello", "world")
+      end
+
+      assert_raises ArgumentError do
+        @pen.write_hello
+      end
+
+      assert_raises ArgumentError do
+        @pen.greet
+      end
+
+      assert_raises ArgumentError do
+        @pen.greet("hello", "bob", "error")
+      end
     end
   end
 end
