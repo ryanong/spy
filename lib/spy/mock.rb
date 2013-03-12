@@ -55,21 +55,14 @@ module Spy
       end
 
       def included(mod)
-        method_classes = mod.ancestors
-        method_classes.shift
-        method_classes.delete(self)
-        CLASSES_NOT_TO_OVERRIDE.each do |klass|
-          index = method_classes.index(klass)
-          method_classes.slice!(index..-1) if index
-        end
+        method_classes = classes_to_override_methods(mod)
 
         [:public, :protected, :private].each do |visibility|
           get_inherited_methods(method_classes, visibility).each do |method_name|
-            method_args = parameters_to_args(mod.instance_method(method_name).parameters)
-            method_args << "&never_hooked"
+            args = args_for_method(mod.instance_method(method_name))
 
             mod.class_eval <<-DEF_METHOD, __FILE__, __LINE__+1
-              def #{method_name}(#{method_args.join(",")})
+              def #{method_name}(#{args})
                 raise ::Spy::NeverHookedError, "'#{method_name}' was never hooked on mock spy."
               end
 
@@ -81,6 +74,17 @@ module Spy
 
       private
 
+      def classes_to_override_methods(mod)
+        method_classes = mod.ancestors
+        method_classes.shift
+        method_classes.delete(self)
+        CLASSES_NOT_TO_OVERRIDE.each do |klass|
+          index = method_classes.index(klass)
+          method_classes.slice!(index..-1) if index
+        end
+        method_classes
+      end
+
       def get_inherited_methods(klass_ancestors, visibility)
         get_methods_method = "#{visibility}_instance_methods".to_sym
         instance_methods = klass_ancestors.map(&get_methods_method)
@@ -89,8 +93,8 @@ module Spy
         instance_methods - Object.send(get_methods_method)
       end
 
-      def parameters_to_args(params)
-        params.map do |type,name|
+      def args_for_method(method)
+        args = method.parameters.map do |type,name|
           name ||= :args
           case type
           when :req
@@ -101,6 +105,8 @@ module Spy
             "*#{name}"
           end
         end.compact
+        args << "&never_hooked"
+        args.join(",")
       end
     end
   end
