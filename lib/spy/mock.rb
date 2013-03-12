@@ -40,7 +40,6 @@ module Spy
     end
 
     class << self
-
       def new(klass)
         mock_klass = Class.new(klass)
         mock_klass.class_exec do
@@ -53,6 +52,7 @@ module Spy
 
           include Mock
         end
+        Agency.instance.recruit(mock_klass)
         mock_klass
       end
 
