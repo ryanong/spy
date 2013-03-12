@@ -4,6 +4,7 @@ module Spy
   # If you attempt to stub a method on the mock that doesn't exist on the
   # original class it will raise an error.
   module Mock
+    include Base
     CLASSES_NOT_TO_OVERRIDE = [Enumerable, Numeric, Comparable, Class, Module, Object]
     METHODS_NOT_TO_OVERRIDE = [:initialize, :method]
 

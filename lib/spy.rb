@@ -1,5 +1,6 @@
 require "spy/core_ext/marshal"
 require "spy/agency"
+require "spy/base"
 require "spy/call_log"
 require "spy/constant"
 require "spy/exceptions"

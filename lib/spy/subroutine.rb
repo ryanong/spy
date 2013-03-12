@@ -1,5 +1,6 @@
 module Spy
   class Subroutine
+    include Base
     # @!attribute [r] base_object
     #   @return [Object] the object that is being watched
     #
@@ -45,7 +46,6 @@ module Spy
       @hook_opts = opts
       @original_method_visibility = method_visibility_of(method_name)
       hook_opts[:visibility] ||= original_method_visibility
-      hook_opts[:force] ||= base_object.is_a?(Double)
 
       if original_method_visibility || !hook_opts[:force]
         @original_method = current_method

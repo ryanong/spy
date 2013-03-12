@@ -22,8 +22,7 @@ module Spy
     # @return [spy]
     def recruit(spy)
       raise AlreadyStubbedError if @spies[spy.object_id]
-      case spy
-      when Subroutine,  Constant, Double
+      if spy.is_a? Base
         @spies[spy.object_id] = spy
       else
         raise ArgumentError, "#{spy}, was not a spy"
@@ -35,8 +34,7 @@ module Spy
     # @return [spy]
     def retire(spy)
       raise NoSpyError unless @spies[spy.object_id]
-      case spy
-      when Subroutine,  Constant, Double
+      if spy.is_a? Base
         @spies.delete(spy.object_id)
       else
         raise ArgumentError, "#{spy}, was not a spy"
@@ -47,8 +45,7 @@ module Spy
     # @param spy [Subroutine, Constant, Double]
     # @return [Boolean]
     def active?(spy)
-      case spy
-      when Subroutine,  Constant, Double
+      if spy.is_a? Base
         @spies.has_key?(spy.object_id)
       else
         raise ArgumentError, "#{spy}, was not a spy"

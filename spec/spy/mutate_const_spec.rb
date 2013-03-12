@@ -16,13 +16,8 @@ class TestSubClass < TestClass
   P = :p
 end
 
-require "rspec/mocks/mutate_const"
-
 module Spy
   describe "Constant Mutating" do
-
-    require "rspec/mocks/mutate_const"
-    include RSpec::Mocks::RecursiveConstMethods
 
     def reset_rspec_mocks
       Spy.teardown
@@ -360,9 +355,6 @@ module Spy
   end
 
   describe Constant do
-    require "rspec/mocks/mutate_const"
-    include RSpec::Mocks::RecursiveConstMethods
-
     def reset_rspec_mocks
       Spy.teardown
     end

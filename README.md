@@ -115,25 +115,6 @@ To stub methods during instantiation just add arguments.
 book = Spy.mock(book, :first_name, author: "Neil Gaiman")
 ```
 
-### Test Doubles
-
-You really shouldn't use these and use Mocks as much as possible. If you really
-want to use it you must require `spy/double`.
-A test double is an object that stands in for a real object.
-
-```ruby
-require 'spy/double'
-Spy.double("book")
-```
-
-Spy will let you stub on any method even if it doesn't exist if the object is a double.
-
-Spy comes with a shortcut to define an object with methods.
-
-```ruby
-Spy.double("book", title: "Grapes of Wrath", author: "John Steinbeck")
-```
-
 ### Arbitrary Handling
 
 If you need to have a custom method based in the method inputs just send a block to `#and_return`

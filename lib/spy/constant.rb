@@ -1,6 +1,6 @@
 module Spy
   class Constant
-
+    include Base
     # @!attribute [r] base_module
     #   @return [Module] the module that is being watched
     #
