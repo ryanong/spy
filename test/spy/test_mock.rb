@@ -8,7 +8,8 @@ module Spy
     end
 
     def setup
-      @pen = Spy.mock(BluePen)
+      @pen_mock = Mock.new(BluePen)
+      @pen = @pen_mock.new
     end
 
     def teardown
@@ -65,6 +66,14 @@ module Spy
       assert_raises Spy::NeverHookedError do
         @pen.another
       end
+    end
+
+    def test_mocked_methods
+      pen_methods = Pen.public_instance_methods(false) +
+        Pen.protected_instance_methods(false) +
+        Pen.private_instance_methods(false)
+      pen_methods.delete(:initialize)
+      assert_equal pen_methods.sort, @pen_mock.mocked_methods.sort
     end
 
     def test_base_class_methods_are_not_stubbed

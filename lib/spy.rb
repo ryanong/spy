@@ -110,8 +110,20 @@ module Spy
     def mock(klass, *stubs)
       new_mock = Mock.new(klass).new
       if stubs.size > 0
-        Spy.on(new_mock, *stubs)
+        on(new_mock, *stubs)
       end
+      new_mock
+    end
+
+    def mock_all(klass, *stubs)
+      mock_klass = Mock.new(klass)
+      new_mock = mock_klass.new
+
+      spies = stubs.size > 0 ? on(new_mock, *stubs) : []
+
+      unstubbed_methods = mock_klass.mocked_methods - spies.map(&:method_name)
+      on(new_mock, *unstubbed_methods) if unstubbed_methods.size > 0
+
       new_mock
     end
 

@@ -5,6 +5,7 @@ module Spy
   # original class it will raise an error.
   module Mock
     CLASSES_NOT_TO_OVERRIDE = [Enumerable, Numeric, Comparable, Class, Module, Object]
+    METHODS_NOT_TO_OVERRIDE = [:initialize, :method]
 
     def initialize
     end
@@ -57,8 +58,10 @@ module Spy
       def included(mod)
         method_classes = classes_to_override_methods(mod)
 
+        mocked_methods = []
         [:public, :protected, :private].each do |visibility|
           get_inherited_methods(method_classes, visibility).each do |method_name|
+            mocked_methods << method_name
             args = args_for_method(mod.instance_method(method_name))
 
             mod.class_eval <<-DEF_METHOD, __FILE__, __LINE__+1
@@ -69,6 +72,10 @@ module Spy
               #{visibility} :#{method_name}
             DEF_METHOD
           end
+        end
+
+        mod.define_singleton_method(:mocked_methods) do
+          mocked_methods
         end
       end
 
@@ -86,11 +93,12 @@ module Spy
       end
 
       def get_inherited_methods(klass_ancestors, visibility)
-        get_methods_method = "#{visibility}_instance_methods".to_sym
-        instance_methods = klass_ancestors.map(&get_methods_method)
+        instance_methods = klass_ancestors.map do |klass|
+         klass.send("#{visibility}_instance_methods".to_sym, false)
+        end
         instance_methods.flatten!
         instance_methods.uniq!
-        instance_methods - Object.send(get_methods_method)
+        instance_methods - METHODS_NOT_TO_OVERRIDE
       end
 
       def args_for_method(method)

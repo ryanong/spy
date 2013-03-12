@@ -47,11 +47,4 @@ class TestSpy < MiniTest::Unit::TestCase
     assert_equal :dumb, double.doubles_are
     assert spy.has_been_called?
   end
-
-  def test_spy_on_mock_does_not_raise
-    mock = Spy.mock(Pen)
-    spy = Spy.on(mock, :write).and_return(:awesome)
-    assert_equal :awesome, mock.write("hello")
-    assert spy.has_been_called?
-  end
 end
