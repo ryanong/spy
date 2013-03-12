@@ -97,8 +97,8 @@ Book.new(title: "The Big Cheese").title   #=> "Cannery Row"
 ### Test Mocks
 
 A test mock is an object that quacks like a given class but will raise an error
-when the method is not stubbed. You can spy on the classes and call through to
-the original method.
+when the method is not stubbed. Spy will not let you stub a method that wasn't
+on the mocked class. You can spy on the classes and call through to the original method.
 
 ```ruby
 book = Spy.mock(Book)
