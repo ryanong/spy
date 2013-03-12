@@ -1,8 +1,8 @@
 module Spy
   module Rails
     class IllegalDataAccessException
-      def message
-        "stubbed models are not allowed to access the database"
+      def to_s
+        @mesg || "stubbed models are not allowed to access the database"
       end
     end
 
