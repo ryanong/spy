@@ -66,5 +66,14 @@ module Spy
         @pen.another
       end
     end
+
+    def test_base_class_methods_are_not_stubbed
+      (Object.instance_methods - [:tap, :pretty_print_inspect]).each do |method_name|
+        object_method = Object.instance_method(method_name)
+        if object_method.parameters == []
+          @pen.send(method_name)
+        end
+      end
+    end
   end
 end

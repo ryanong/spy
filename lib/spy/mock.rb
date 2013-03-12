@@ -4,7 +4,7 @@ module Spy
   # If you attempt to stub a method on the mock that doesn't exist on the
   # original class it will raise an error.
   module Mock
-    CLASSES_NOT_TO_OVERRIDE = [Enumerable, Numeric, Comparable, Class, Module, Object, Kernel, BasicObject]
+    CLASSES_NOT_TO_OVERRIDE = [Enumerable, Numeric, Comparable, Class, Module, Object]
 
     def initialize
     end
@@ -39,18 +39,9 @@ module Spy
 
     class << self
 
-      def included(mod)
-      end
       def new(klass)
-        method_classes = klass.ancestors
-        method_classes -= CLASSES_NOT_TO_OVERRIDE
-        method_classes << klass
-        method_classes.uniq!
-
         mock_klass = Class.new(klass)
         mock_klass.class_exec do
-          include Mock
-
           alias :_mock_class :class
           private :_mock_class
 
@@ -58,23 +49,37 @@ module Spy
             klass
           end
 
-          [:public, :protected, :private].each do |visibility|
-            Mock.get_inherited_methods(method_classes, visibility).each do |method_name|
-              method_args = Mock.parameters_to_args(klass.instance_method(method_name).parameters)
-              method_args << "&never_hooked"
-
-              eval <<-DEF_METHOD, binding, __FILE__, __LINE__+1
-                def #{method_name}(#{method_args.join(",")})
-                  raise ::Spy::NeverHookedError, "'#{method_name}' was never hooked on mock spy."
-                end
-
-                #{visibility} :#{method_name}
-              DEF_METHOD
-            end
-          end
+          include Mock
         end
         mock_klass
       end
+
+      def included(mod)
+        method_classes = mod.ancestors
+        method_classes.shift
+        method_classes.delete(self)
+        CLASSES_NOT_TO_OVERRIDE.each do |klass|
+          index = method_classes.index(klass)
+          method_classes.slice!(index..-1) if index
+        end
+
+        [:public, :protected, :private].each do |visibility|
+          get_inherited_methods(method_classes, visibility).each do |method_name|
+            method_args = parameters_to_args(mod.instance_method(method_name).parameters)
+            method_args << "&never_hooked"
+
+            mod.class_eval <<-DEF_METHOD, __FILE__, __LINE__+1
+              def #{method_name}(#{method_args.join(",")})
+                raise ::Spy::NeverHookedError, "'#{method_name}' was never hooked on mock spy."
+              end
+
+              #{visibility} :#{method_name}
+            DEF_METHOD
+          end
+        end
+      end
+
+      private
 
       def get_inherited_methods(klass_ancestors, visibility)
         get_methods_method = "#{visibility}_instance_methods".to_sym
