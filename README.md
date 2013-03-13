@@ -101,7 +101,7 @@ when the method is not stubbed. Spy will not let you stub a method that wasn't
 on the mocked class. You can spy on the classes and call through to the original method.
 
 ```ruby
-book = Spy.mock(Book)
+book = Spy.mock(Book) # Must be a class
 Spy.on(book, first_name: "Neil", last_name: "Gaiman")
 Spy.on(book, :author).and_call_through
 book.author #=> "Neil Gaiman"
@@ -113,7 +113,7 @@ book.title #=> Spy::NeverHookedError: 'title' was never hooked on mock spy.
 To stub methods during instantiation just add arguments.
 
 ```ruby
-book = Spy.mock(book, :first_name, author: "Neil Gaiman")
+book = Spy.mock(Book, :first_name, author: "Neil Gaiman")
 ```
 
 ### Arbitrary Handling
