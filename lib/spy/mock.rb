@@ -89,7 +89,7 @@ module Spy
 
       def get_inherited_methods(klass_ancestors, visibility)
         instance_methods = klass_ancestors.map do |klass|
-         klass.send("#{visibility}_instance_methods".to_sym, false)
+          klass.send("#{visibility}_instance_methods".to_sym, false)
         end
         instance_methods.flatten!
         instance_methods.uniq!
@@ -97,7 +97,8 @@ module Spy
       end
 
       def args_for_method(method)
-        args = method.parameters.map do |type,name|
+        args = method.parameters
+        args.map! do |type,name|
           name ||= :args
           case type
           when :req
@@ -107,7 +108,8 @@ module Spy
           when :rest
             "*#{name}"
           end
-        end.compact
+        end
+        args.compact!
         args << "&mock_method"
         args.join(",")
       end
