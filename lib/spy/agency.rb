@@ -68,7 +68,7 @@ module Spy
     private
 
     def check_spy!(spy)
-      raise ArgumentError, "#{spy}, was not a spy" unless spy.is_a?(Base) || spy.respond_to?(:_mock_class, true)
+      raise ArgumentError, "#{spy}, was not a spy" unless spy.is_a?(Base)
     end
   end
 end

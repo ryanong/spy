@@ -12,12 +12,6 @@ module Spy
       Agency.instance.recruit(self)
     end
 
-    def is_a?(other)
-      self.class.ancestors.include?(other)
-    end
-
-    alias :kind_of? :is_a?
-
     def instance_of?(other)
       other == self.class
     end
