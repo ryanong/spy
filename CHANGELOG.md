@@ -1,3 +1,7 @@
+## Spy 0.3.1 (March 13, 2013) ##
+
+*   Fix Agency recruiting of mock
+
 ## Spy 0.3.0 (March 12, 2013) ##
 
 *   Added Mock
