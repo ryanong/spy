@@ -18,8 +18,8 @@ module Spy
 
     def method(method_name)
       new_method = super
-      if new_method.parameters.size >= 1 &&
-        new_method.parameters.last.last == :mock_method
+      parameters = new_method.parameters
+      if parameters.size >= 1 && parameters.last.last == :mock_method
         self.class.instance_method(method_name).bind(self)
       else
         new_method
@@ -51,13 +51,13 @@ module Spy
             mocked_methods << method_name
             args = args_for_method(mod.instance_method(method_name))
 
-            mod.class_eval <<-DEF_METHOD, __FILE__, __LINE__+1
+            mod.class_eval <<-DEF_METHOD, __FILE__, __LINE__ + 1
               def #{method_name}(#{args})
                 raise ::Spy::NeverHookedError, "'#{method_name}' was never hooked on mock spy."
               end
-
-              #{visibility} :#{method_name}
             DEF_METHOD
+
+            mod.send(visibility, method_name)
           end
         end
 

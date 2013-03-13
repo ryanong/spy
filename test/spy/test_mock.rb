@@ -77,11 +77,13 @@ module Spy
     end
 
     def test_base_class_methods_are_not_stubbed
-      buggy_methods = [:tap, :pretty_print_inspect, :initialize_clone]
+      buggy_methods = [:tap, :pretty_print_inspect]
       methods_to_test = Object.instance_methods - buggy_methods
       methods_to_test.each do |method_name|
         object_method = Object.instance_method(method_name)
-        @pen.send(method_name) if object_method.parameters == []
+        if object_method.arity == 0 || (RUBY_ENGINE != "jruby" && object_method.parameters == [])
+          @pen_mock.new.send(method_name)
+        end
       end
     end
   end
