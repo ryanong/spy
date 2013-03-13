@@ -8,7 +8,8 @@ module Spy
     CLASSES_NOT_TO_OVERRIDE = [Enumerable, Numeric, Comparable, Class, Module, Object]
     METHODS_NOT_TO_OVERRIDE = [:initialize, :method]
 
-    def initialize
+    def initialize(&mock_method)
+      Agency.instance.recruit(self)
     end
 
     def is_a?(other)
@@ -24,7 +25,7 @@ module Spy
     def method(method_name)
       new_method = super
       if new_method.parameters.size >= 1 &&
-        new_method.parameters.last.last == :never_hooked
+        new_method.parameters.last.last == :mock_method
 
         begin
           _mock_class.send(:remove_method, method_name)
@@ -52,7 +53,6 @@ module Spy
 
           include Mock
         end
-        Agency.instance.recruit(mock_klass)
         mock_klass
       end
 
@@ -114,7 +114,7 @@ module Spy
             "*#{name}"
           end
         end.compact
-        args << "&never_hooked"
+        args << "&mock_method"
         args.join(",")
       end
     end

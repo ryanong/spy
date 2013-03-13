@@ -22,11 +22,8 @@ module Spy
     # @return [spy]
     def recruit(spy)
       raise AlreadyStubbedError if @spies[spy.object_id]
-      if spy.is_a? Base
-        @spies[spy.object_id] = spy
-      else
-        raise ArgumentError, "#{spy}, was not a spy"
-      end
+      check_spy!(spy)
+      @spies[spy.object_id] = spy
     end
 
     # remove spy from the records
@@ -34,22 +31,15 @@ module Spy
     # @return [spy]
     def retire(spy)
       raise NoSpyError unless @spies[spy.object_id]
-      if spy.is_a? Base
-        @spies.delete(spy.object_id)
-      else
-        raise ArgumentError, "#{spy}, was not a spy"
-      end
+      @spies.delete(spy.object_id)
     end
 
     # checks to see if a spy is hooked
     # @param spy [Subroutine, Constant, Double]
     # @return [Boolean]
     def active?(spy)
-      if spy.is_a? Base
-        @spies.has_key?(spy.object_id)
-      else
-        raise ArgumentError, "#{spy}, was not a spy"
-      end
+      check_spy!(spy)
+      @spies.has_key?(spy.object_id)
     end
 
     # unhooks all spies and clears records
@@ -73,6 +63,12 @@ module Spy
     # @return [Array<Subroutine, Constant, Double>]
     def spies
       @spies.values
+    end
+
+    private
+
+    def check_spy!(spy)
+      raise ArgumentError, "#{spy}, was not a spy" unless spy.is_a?(Base) || spy.respond_to?(:_mock_class, true)
     end
   end
 end
