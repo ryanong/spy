@@ -20,15 +20,7 @@ module Spy
       new_method = super
       if new_method.parameters.size >= 1 &&
         new_method.parameters.last.last == :mock_method
-
-        begin
-          _mock_class.send(:remove_method, method_name)
-          real_method = super
-        ensure
-          _mock_class.send(:define_method, method_name, new_method)
-        end
-
-        real_method
+        self.class.instance_method(method_name).bind(self)
       else
         new_method
       end
