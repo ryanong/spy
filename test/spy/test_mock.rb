@@ -77,11 +77,11 @@ module Spy
     end
 
     def test_base_class_methods_are_not_stubbed
-      (Object.instance_methods - [:tap, :pretty_print_inspect]).each do |method_name|
+      buggy_methods = [:tap, :pretty_print_inspect, :initialize_clone]
+      methods_to_test = Object.instance_methods - buggy_methods
+      methods_to_test.each do |method_name|
         object_method = Object.instance_method(method_name)
-        if object_method.parameters == []
-          @pen.send(method_name)
-        end
+        @pen.send(method_name) if object_method.parameters == []
       end
     end
   end
