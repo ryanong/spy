@@ -139,7 +139,7 @@ end
 When you stub a method it returns a spy. A spy records what calls have been made to a given method.
 
 ```ruby
-validator = Spy.double("validator")
+validator = Spy.mock(Validator)
 validate_spy = Spy.on(validator, :validate)
 validate_spy.has_been_called? #=> false
 

@@ -331,7 +331,9 @@ module Spy
           if base_object.respond_to?(method_name, true)
             spied_method = base_object.method(method_name)
           end
-        elsif (base_object.instance_methods + base_object.private_instance_methods).include?(method_name)
+        elsif (base_object.public_instance_methods +
+               base_object.protected_instance_methods +
+               base_object.private_instance_methods).include?(method_name)
           spied_method = base_object.instance_method(method_name)
         end
 

@@ -41,7 +41,11 @@ module Spy
       removed_spies.size > 1 ? removed_spies : removed_spies.first
     end
 
-    #
+    # stubs the instance method of a given Class so all instance methods of this
+    # class will have the given method stubbed
+    # @param base_class [Class] The class you wish to stub the instance methods of
+    # @param method_names *[Symbol, Hash]
+    # @return [Spy,Array<Spy>]
     def on_instance_method(base_class, *method_names)
       spies = method_names.map do |method_name|
         create_and_hook_spy(base_class, method_name, false)
@@ -50,13 +54,17 @@ module Spy
       spies.size > 1 ? spies : spies.first
     end
 
-    def off_instance_method(base_object, *method_names)
+    # remove the stub from given Class
+    # @param base_class [Class]
+    # @param method_names *[Symbol]
+    # @return [Spy]
+    def off_instance_method(base_class, *method_names)
       removed_spies = method_names.map do |method_name|
-        spy = Subroutine.get(base_object, method_name, false)
+        spy = Subroutine.get(base_class, method_name, false)
         if spy
           spy.unhook
         else
-          raise NoSpyError, "#{method_name} was not hooked on #{base_object.inspect}."
+          raise NoSpyError, "#{method_name} was not hooked on #{base_class.inspect}."
         end
       end
 
@@ -108,6 +116,10 @@ module Spy
       spies.size > 1 ? spies : spies.first
     end
 
+    # Create a mock object from a given class
+    # @param klass [Class] class you wish to mock
+    # @param stubs *[Symbol, Hash] methods you with to stub
+    # @return [Object]
     def mock(klass, *stubs)
       new_mock = Mock.new(klass).new
       if stubs.size > 0
@@ -116,6 +128,11 @@ module Spy
       new_mock
     end
 
+    # create a mock object from a given class with all the methods stubbed out
+    # and returning nil unless specified otherwise.
+    # @param klass [Class] class you wish to mock
+    # @param stubs *[Symbol, Hash] methods you with to stub
+    # @return [Object]
     def mock_all(klass, *stubs)
       mock_klass = Mock.new(klass)
       new_mock = mock_klass.new

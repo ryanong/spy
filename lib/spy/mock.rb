@@ -12,10 +12,17 @@ module Spy
       Agency.instance.recruit(self)
     end
 
+    # the only method that doesn't work correctly of a mock if inherited. We
+    # overwite for compatibility.
+    # @param other [Class]
+    # @return [Boolean]
     def instance_of?(other)
       other == self.class
     end
 
+    # returns the original class method if the current method is a mock_method
+    # @param method_name [Symbol, String]
+    # @return [Method]
     def method(method_name)
       new_method = super
       parameters = new_method.parameters
@@ -27,6 +34,10 @@ module Spy
     end
 
     class << self
+      # This will create a new Mock class with all the instance methods of given
+      # klass mocked out.
+      # @param klass [Class]
+      # @return [Class]
       def new(klass)
         mock_klass = Class.new(klass)
         mock_klass.class_exec do
@@ -41,6 +52,8 @@ module Spy
         end
         mock_klass
       end
+
+      private
 
       def included(mod)
         method_classes = classes_to_override_methods(mod)
@@ -65,8 +78,6 @@ module Spy
           mocked_methods
         end
       end
-
-      private
 
       def classes_to_override_methods(mod)
         method_classes = mod.ancestors
