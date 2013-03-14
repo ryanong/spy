@@ -1,33 +1,8 @@
 module Spy
-  class Error < StandardError; end
-
-  class AlreadyStubbedError < Error
-    def to_s
-      @mesg || "Spy is already stubbed."
-    end
-  end
-
-  class AlreadyHookedError < Error
-    def to_s
-      @mesg || "Spy is already hooked."
-    end
-  end
-
-  class NotHookedError < Error
-    def to_s
-      @mesg || "Spy was not hooked."
-    end
-  end
-
-  class NeverHookedError < Error
-    def to_s
-      @mesg || "Spy was never hooked."
-    end
-  end
-
-  class NoSpyError < Error
-    def to_s
-      @mesg || "Spy could not be found"
-    end
-  end
+  Error = Class.new(StandardError)
+  AlreadyStubbedError = Class.new(Error)
+  AlreadyHookedError = Class.new(Error)
+  NotHookedError = Class.new(Error)
+  NeverHookedError = Class.new(Error)
+  NoSpyError = Class.new(Error)
 end
