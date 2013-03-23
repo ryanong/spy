@@ -193,7 +193,7 @@ MiniTest::TestCase.add_teardown_hook { Spy.teardown }
 class TestBook < MiniTest::Unit::TestCase
   def test_title
     book = book.new
-    title_spy = spy.on(book, title)
+    title_spy = Spy.on(book, title)
     book.title
     book.title
 
@@ -218,7 +218,7 @@ end
 describe Book do
   it "title can be called" do
     book = book.new
-    title_spy = spy.on(book, title)
+    title_spy = Spy.on(book, title)
     book.title
     book.title
 
