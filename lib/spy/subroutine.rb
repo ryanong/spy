@@ -193,9 +193,8 @@ module Spy
     # @return [Boolean]
     def has_been_called_with?(*args)
       raise NeverHookedError unless @was_hooked
-      calls.any? do |call_log|
-        call_log.args == args
-      end
+      match = block_given? ? Proc.new : proc { |call| call.args == args }
+      calls.any?(&match)
     end
 
     # invoke that the method has been called. You really shouldn't use this
