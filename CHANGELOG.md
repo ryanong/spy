@@ -1,3 +1,9 @@
+## Spy 0.4.0 (May 8, 2013) ##
+
+*   Allow `Spy#have_received_with` to accept a block
+*   Add automatic test integration for TestUnit, Minitest and Rspec
+*   Fix a few rubinius tests
+
 ## Spy 0.3.1 (March 13, 2013) ##
 
 *   Fix Agency recruiting of mock
