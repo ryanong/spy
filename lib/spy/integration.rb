@@ -29,5 +29,14 @@ module Spy
     ::Test::Unit::TestCase.send(:include, TestUnitAdapter)
   end
 
-  if defined?(::Rspec)
+  class RspecAdapter
+    include API
+    def setup_mocks_for_rspec
+    end
+    def verify_mocks_for_rspec
+    end
+    def teardown_mocks_for_rspec
+      Spy.teardown
+    end
+  end
 end

@@ -26,18 +26,18 @@ module Spy
 
       def matches?(actual)
         @actual = actual
-        case @args
+        case @with
         when Proc
-          spy.has_been_called_with?(&@args)
+          spy.has_been_called_with?(&@with)
         when Array
-          spy.has_been_called_with?(*@args)
+          spy.has_been_called_with?(*@with)
         else
           spy.has_been_called?
         end
       end
 
       def with(*args)
-        @args = block_given? ? Proc.new : args
+        @with = block_given? ? Proc.new : args
         self
       end
 
@@ -56,13 +56,11 @@ module Spy
       private
 
       def args_message
-        case @args
+        case @with
         when Array
-          " with #{@args.inspect}"
+          " with #{@with.inspect}"
         when Proc
           " with given block"
-        else
-          ""
         end
       end
 

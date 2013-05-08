@@ -181,26 +181,30 @@ first_call.result #=> "hello world"
 first_call.called_from #=> "file_name.rb:line_number"
 ```
 
-### MiniTest
+## Test Framework Integration
 
-In `test_helper.rb`
+### MiniTest/TestUnit
+
+in your `test_helper.rb` add this line after you include your framework
 
 ```ruby
-require "spy"
-MiniTest::TestCase.add_teardown_hook { Spy.teardown }
+require 'spy/integration'
+```
 
+In your test file
 
-class TestBook < MiniTest::Unit::TestCase
+```ruby
   def test_title
-    book = book.new
+    book = Book.new
     title_spy = Spy.on(book, title)
     book.title
     book.title
 
+    assert_received book, :title
+
     assert title_spy.has_been_called?
     assert_equal 2, title_spy.calls.count
   end
-end
 ```
 
 ### Rspec
@@ -209,34 +213,28 @@ In `spec_helper.rb`
 
 ```ruby
 require "rspec/autorun"
-require "spy"
+require "spy/integration"
 RSpec.configure do |c|
-  c.after { Spy.teardown  }
-  c.mock_with :absolutely_nothing # this is completely optional.
-end
-
-describe Book do
-  it "title can be called" do
-    book = book.new
-    title_spy = Spy.on(book, title)
-    book.title
-    book.title
-
-    expect(title_spy).to have_been_called
-    expect(title_spy.calls.count).to eq(2)
-  end
+  c.mock_with Spy::RspecAdapter
 end
 ```
 
-### Test::Unit
+In your test
 
 ```ruby
-require "spy"
-class Test::Unit::TestCase
-  def teardown
-    # if you don't add super to every teardown then you will have to add this
-    # line to every file.
-    Spy.teardown
+describe Book do
+  it "title can be called" do
+    book = book.new
+    page_spy = Spy.on(book, page)
+    book.page(1)
+    book.page(2)
+
+    expect(book).to have_received(:page)
+    expect(book).to have_received(:page).with(1)
+    expect(book).to have_received(:page).with(2)
+
+    expect(page_spy).to have_been_called
+    expect(page_spy.calls.count).to eq(2)
   end
 end
 ```
