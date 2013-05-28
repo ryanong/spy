@@ -1,8 +1,8 @@
 require 'spy'
 
 module Spy
-  if defined?(::MiniTest::Unit::TestCase)
-    class MiniTestAdapter
+  if defined?(::MiniTest::Unit::TestCase) || defined?(::Minitest::Test)
+    module MiniTestAdapter
       include API
       def after_teardown
         super
@@ -10,12 +10,16 @@ module Spy
       end
     end
 
-    ::MiniTest::Unit::TestCase.send(:include, MiniTestAdapter)
+    if defined?(::MiniTest::Unit::TestCase)
+      ::MiniTest::Unit::TestCase.send(:include, MiniTestAdapter)
+    else
+     ::Minitest::Test.send(:include, MiniTestAdapter)
+    end
   end
 
   if defined?(::Test::Unit::TestCase) && !(defined?(::MiniTest::Unit::TestCase) && (::Test::Unit::TestCase < ::MiniTest::Unit::TestCase)) && !(defined?(::MiniTest::Spec) && (::Test::Unit::TestCase < ::MiniTest::Spec))
 
-    class TestUnitAdapter
+    module TestUnitAdapter
       include API
       def self.included(mod)
         mod.teardown :spy_teardown, :after => :append
