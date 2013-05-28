@@ -1,0 +1,306 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Spy by ryanong</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Spy</h1>
+        <p>A simple opinionated mocking framework. All the features of rspec-mocks and more in half the code.</p>
+
+        <p class="view"><a href="https://github.com/ryanong/spy">View the Project on GitHub <small>ryanong/spy</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/ryanong/spy/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/ryanong/spy/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/ryanong/spy">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p><a href="http://badge.fury.io/rb/spy"><img src="https://badge.fury.io/rb/spy.png" alt="Gem Version"></a>
+<a href="https://travis-ci.org/ryanong/spy"><img src="https://travis-ci.org/ryanong/spy.png?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/r/ryanong/spy"><img src="https://coveralls.io/repos/ryanong/spy/badge.png?branch=master" alt="Coverage Status"></a></p>
+
+<p><a href="http://rdoc.info/gems/spy/frames">Docs</a></p>
+
+<p>Spy is a lightweight stubbing framework with support for method spies, constant stubs, and object mocks.</p>
+
+<p>Spy was designed for 1.9.3+.</p>
+
+<p>Spy features that were completed were tested against the rspec-mocks tests so it covers all cases that rspec-mocks does.</p>
+
+<p>Inspired by the spy api of the jasmine javascript testing framework.</p>
+
+<h2>Why use this instead of rspec-mocks, mocha, or etc</h2>
+
+<ul>
+<li>Spy will raise error when you try to stub/spy a method that doesn't exist
+
+<ul>
+<li>when you change your method name your unit tests will break</li>
+<li>no more fantasy tests</li>
+</ul>
+</li>
+<li>Spy arity matches original method
+
+<ul>
+<li>Your tests will raise an error if you use the wrong arity</li>
+</ul>
+</li>
+<li>Spy visibility matches original method
+
+<ul>
+<li>Your tests will raise an error if you try to call the method incorrectly</li>
+</ul>
+</li>
+<li>Simple call log api
+
+<ul>
+<li>easier to read tests</li>
+<li>use ruby to test ruby instead of a dsl</li>
+</ul>
+</li>
+<li>no expectations
+
+<ul>
+<li>really who thought that was a good idea?</li>
+</ul>
+</li>
+<li>absolutely no polution of global object space</li>
+<li>no polution of instance variables for stubbed objects</li>
+</ul><p>Fail faster, code faster.</p>
+
+<h2>Why not to use this</h2>
+
+<ul>
+<li>mocking null objects is not supported(yet)</li>
+<li>no argument matchers for <code>Spy::Subroutine#has_been_called_with</code>
+</li>
+<li>cannot watch all calls to an object to check order in which they are called</li>
+<li>cannot transfer nested constants when stubbing a constant
+
+<ul>
+<li>i don't think anybody uses this anyway</li>
+<li>nobody on github does</li>
+</ul>
+</li>
+<li>#with is not supported
+
+<ul>
+<li>you can usually just check the call logs.</li>
+<li>if you do need to use this. It is probably a code smell. You either need to abstract your method more or add separate tests.</li>
+</ul>
+</li>
+<li>you want to use dumb double, Spy has smart mocks, they are better</li>
+<li>you use <code>mock_model</code> and <code>stub_model</code> (I want to impliment this soon)</li>
+</ul><h2>Installation</h2>
+
+<p>Add this line to your application's Gemfile:</p>
+
+<pre><code>gem 'spy'
+</code></pre>
+
+<p>And then execute:</p>
+
+<pre><code>$ bundle
+</code></pre>
+
+<p>Or install it yourself as:</p>
+
+<pre><code>$ gem install spy
+</code></pre>
+
+<h2>Usage</h2>
+
+<h3>Method Stubs</h3>
+
+<p>A method stub overrides a pre-existing method and records all calls to specified method. You can set the spy to return either the original method or your own custom implementation.</p>
+
+<p>Spy support 2 different ways of spying an existing method on an object.</p>
+
+<div class="highlight"><pre><span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">title</span><span class="p">:</span> <span class="s2">"East of Eden"</span><span class="p">)</span>
+<span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">:title</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="s2">"East of Eden"</span><span class="p">)</span>
+<span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">:title</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span> <span class="p">{</span> <span class="s2">"East of Eden"</span> <span class="p">}</span>
+
+<span class="n">book</span><span class="o">.</span><span class="n">title</span>  <span class="c1">#=&gt; "East of Eden"</span>
+</pre></div>
+
+<p>Spy will raise an error if you try to stub on a method that doesn't exist.
+You can force the creation of a stub on method that didn't exist but it really isn't suggested.</p>
+
+<div class="highlight"><pre><span class="ss">Spy</span><span class="p">:</span><span class="ss">:Subroutine</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">:flamethrower</span><span class="p">)</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="ss">force</span><span class="p">:</span><span class="kp">true</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="s2">"burnninante"</span><span class="p">)</span>
+</pre></div>
+
+<p>You can also stub instance methods of Classes and Modules. This is equivalent to
+rspec-mock's <code>Module#any_instance</code></p>
+
+<div class="highlight"><pre><span class="no">Spy</span><span class="o">.</span><span class="n">on_instance_method</span><span class="p">(</span><span class="no">Book</span><span class="p">,</span> <span class="ss">:title</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="s2">"Cannery Row"</span><span class="p">)</span>
+
+<span class="no">Book</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">title</span><span class="p">:</span> <span class="s2">"Siddhartha"</span><span class="p">)</span><span class="o">.</span><span class="n">title</span>   <span class="c1">#=&gt; "Cannery Row"</span>
+<span class="no">Book</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">title</span><span class="p">:</span> <span class="s2">"The Big Cheese"</span><span class="p">)</span><span class="o">.</span><span class="n">title</span>   <span class="c1">#=&gt; "Cannery Row"</span>
+</pre></div>
+
+<h3>Test Mocks</h3>
+
+<p>A test mock is an object that quacks like a given class but will raise an error
+when the method is not stubbed. Spy will not let you stub a method that wasn't
+on the mocked class. You can spy on the classes and call through to the original method.</p>
+
+<div class="highlight"><pre><span class="n">book</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">mock</span><span class="p">(</span><span class="no">Book</span><span class="p">)</span> <span class="c1"># Must be a class</span>
+<span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="n">first_name</span><span class="p">:</span> <span class="s2">"Neil"</span><span class="p">,</span> <span class="n">last_name</span><span class="p">:</span> <span class="s2">"Gaiman"</span><span class="p">)</span>
+<span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">:author</span><span class="p">)</span><span class="o">.</span><span class="n">and_call_through</span>
+<span class="n">book</span><span class="o">.</span><span class="n">author</span> <span class="c1">#=&gt; "Neil Gaiman"</span>
+
+<span class="n">book</span><span class="o">.</span><span class="n">responds_to?</span> <span class="ss">:title</span> <span class="c1">#=&gt; true</span>
+<span class="n">book</span><span class="o">.</span><span class="n">title</span> <span class="c1">#=&gt; Spy::NeverHookedError: 'title' was never hooked on mock spy.</span>
+</pre></div>
+
+<p>To stub methods during instantiation just add arguments.</p>
+
+<div class="highlight"><pre><span class="n">book</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">mock</span><span class="p">(</span><span class="no">Book</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">author</span><span class="p">:</span> <span class="s2">"Neil Gaiman"</span><span class="p">)</span>
+</pre></div>
+
+<h3>Arbitrary Handling</h3>
+
+<p>If you need to have a custom method based in the method inputs just send a block to <code>#and_return</code></p>
+
+<div class="highlight"><pre><span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">:read_page</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span> <span class="k">do</span> <span class="o">|</span><span class="n">page</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="o">|</span>
+  <span class="n">block</span><span class="o">.</span><span class="n">call</span>
+  <span class="s2">"awesome "</span> <span class="o">*</span> <span class="n">page</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>An error will raise if the arity of the block is larger than the arity of the original method. However this can be overidden with the force argument.</p>
+
+<div class="highlight"><pre><span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">:read_page</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="ss">force</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="o">|</span>
+<span class="k">end</span>
+</pre></div>
+
+<h3>Method Spies</h3>
+
+<p>When you stub a method it returns a spy. A spy records what calls have been made to a given method.</p>
+
+<div class="highlight"><pre><span class="n">validator</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">mock</span><span class="p">(</span><span class="no">Validator</span><span class="p">)</span>
+<span class="n">validate_spy</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">validator</span><span class="p">,</span> <span class="ss">:validate</span><span class="p">)</span>
+<span class="n">validate_spy</span><span class="o">.</span><span class="n">has_been_called?</span> <span class="c1">#=&gt; false</span>
+
+<span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">"01234"</span><span class="p">)</span>   <span class="c1">#=&gt; nil</span>
+<span class="n">validate_spy</span><span class="o">.</span><span class="n">has_been_called?</span> <span class="c1">#=&gt; true</span>
+<span class="n">validate_spy</span><span class="o">.</span><span class="n">has_been_called_with?</span><span class="p">(</span><span class="s2">"01234"</span><span class="p">)</span> <span class="c1">#=&gt; true</span>
+</pre></div>
+
+<p>You can also retrieve a method spy on demand</p>
+
+<div class="highlight"><pre><span class="no">Spy</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">validator</span><span class="p">,</span> <span class="ss">:validate</span><span class="p">)</span>
+</pre></div>
+
+<h3>Calling through</h3>
+
+<p>If you just want to make sure if a method is called and not override the output you can just use the <code>#and_call_through</code> method</p>
+
+<div class="highlight"><pre><span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="ss">:read_page</span><span class="p">)</span><span class="o">.</span><span class="n">and_call_through</span>
+</pre></div>
+
+<p>By if the original method never existed it will call <code>#method_missing</code> on the spied object.</p>
+
+<h3>Call Logs</h3>
+
+<p>When a spy is called on it records a call log. A call log contains the object it was called on, the arguments and block that were sent to method and what it returned.</p>
+
+<div class="highlight"><pre><span class="n">read_page_spy</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="n">read_page</span><span class="p">:</span> <span class="s2">"hello world"</span><span class="p">)</span>
+<span class="n">book</span><span class="o">.</span><span class="n">read_page</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="p">{</span> <span class="s2">"this is a block"</span> <span class="p">}</span>
+<span class="n">book</span><span class="o">.</span><span class="n">read_page</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">book</span><span class="o">.</span><span class="n">read_page</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">read_page_spy</span><span class="o">.</span><span class="n">calls</span><span class="o">.</span><span class="n">size</span> <span class="c1">#=&gt; 3</span>
+<span class="n">first_call</span> <span class="o">=</span> <span class="n">read_page_spy</span><span class="o">.</span><span class="n">calls</span><span class="o">.</span><span class="n">first</span>
+<span class="n">first_call</span><span class="o">.</span><span class="n">object</span> <span class="c1">#=&gt; book</span>
+<span class="n">first_call</span><span class="o">.</span><span class="n">args</span>   <span class="c1">#=&gt; [5]</span>
+<span class="n">first_call</span><span class="o">.</span><span class="n">block</span>  <span class="c1">#=&gt; Proc.new { "this is a block" }</span>
+<span class="n">first_call</span><span class="o">.</span><span class="n">result</span> <span class="c1">#=&gt; "hello world"</span>
+<span class="n">first_call</span><span class="o">.</span><span class="n">called_from</span> <span class="c1">#=&gt; "file_name.rb:line_number"</span>
+</pre></div>
+
+<h2>Test Framework Integration</h2>
+
+<h3>MiniTest/TestUnit</h3>
+
+<p>in your <code>test_helper.rb</code> add this line after you include your framework</p>
+
+<div class="highlight"><pre><span class="nb">require</span> <span class="s1">'spy/integration'</span>
+</pre></div>
+
+<p>In your test file</p>
+
+<div class="highlight"><pre>  <span class="k">def</span> <span class="nf">test_title</span>
+    <span class="n">book</span> <span class="o">=</span> <span class="no">Book</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">title_spy</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+    <span class="n">book</span><span class="o">.</span><span class="n">title</span>
+    <span class="n">book</span><span class="o">.</span><span class="n">title</span>
+
+    <span class="n">assert_received</span> <span class="n">book</span><span class="p">,</span> <span class="ss">:title</span>
+
+    <span class="n">assert</span> <span class="n">title_spy</span><span class="o">.</span><span class="n">has_been_called?</span>
+    <span class="n">assert_equal</span> <span class="mi">2</span><span class="p">,</span> <span class="n">title_spy</span><span class="o">.</span><span class="n">calls</span><span class="o">.</span><span class="n">count</span>
+  <span class="k">end</span>
+</pre></div>
+
+<h3>Rspec</h3>
+
+<p>In <code>spec_helper.rb</code></p>
+
+<div class="highlight"><pre><span class="nb">require</span> <span class="s2">"rspec/autorun"</span>
+<span class="nb">require</span> <span class="s2">"spy/integration"</span>
+<span class="no">RSpec</span><span class="o">.</span><span class="n">configure</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">mock_with</span> <span class="ss">Spy</span><span class="p">:</span><span class="ss">:RspecAdapter</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>In your test</p>
+
+<div class="highlight"><pre><span class="n">describe</span> <span class="no">Book</span> <span class="k">do</span>
+  <span class="n">it</span> <span class="s2">"title can be called"</span> <span class="k">do</span>
+    <span class="n">book</span> <span class="o">=</span> <span class="n">book</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">page_spy</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">book</span><span class="p">,</span> <span class="n">page</span><span class="p">)</span>
+    <span class="n">book</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">book</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">expect</span><span class="p">(</span><span class="n">book</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span>
+    <span class="n">expect</span><span class="p">(</span><span class="n">book</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">expect</span><span class="p">(</span><span class="n">book</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">expect</span><span class="p">(</span><span class="n">page_spy</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">have_been_called</span>
+    <span class="n">expect</span><span class="p">(</span><span class="n">page_spy</span><span class="o">.</span><span class="n">calls</span><span class="o">.</span><span class="n">count</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<h2>Contributing</h2>
+
+<ol>
+<li>Fork it</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create new Pull Request</li>
+</ol>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/ryanong">ryanong</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
