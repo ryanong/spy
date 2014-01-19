@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TestSpy < MiniTest::Unit::TestCase
+class TestSpy < Minitest::Test
   def setup
     @pen = Pen.new
   end

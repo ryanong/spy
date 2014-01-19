@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TestConstantSpying < MiniTest::Unit::TestCase
+class TestConstantSpying < Minitest::Test
 
   class Foo
     HELLO = "hello world"

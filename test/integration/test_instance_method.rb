@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TestAnyInstanceOf < MiniTest::Unit::TestCase
+class TestAnyInstanceOf < Minitest::Test
   class Foo
     def bar
       "foobar"

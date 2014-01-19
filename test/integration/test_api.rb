@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TestApi < MiniTest::Unit::TestCase
+class TestApi < Minitest::Test
   include Spy::API
 
   def setup

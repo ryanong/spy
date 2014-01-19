@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TestMocking < MiniTest::Unit::TestCase
+class TestMocking < Minitest::Test
   def teardown
     Spy::Agency.instance.dissolve!
   end

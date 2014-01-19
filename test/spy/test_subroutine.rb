@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module Spy
-  class TestSubroutine < MiniTest::Unit::TestCase
+  class TestSubroutine < Minitest::Test
     def spy_on(base_object, method_name)
       Subroutine.new(base_object, method_name).hook
     end

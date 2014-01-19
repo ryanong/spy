@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module Spy
-  class TestMock < MiniTest::Unit::TestCase
+  class TestMock < Minitest::Test
     class BluePen < Pen
       def write_hello(other)
       end
