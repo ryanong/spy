@@ -10,9 +10,11 @@ module Spy
       end
     end
 
-    if defined?(::MiniTest::Unit::TestCase)
+    if defined?(::MiniTest::Unit::TestCase) && !::MiniTest::Unit::TestCase.include?(MiniTestAdapter)
       ::MiniTest::Unit::TestCase.send(:include, MiniTestAdapter)
-    else
+    end
+
+    if defined?(::Minitest::Test) && !::Minitest::Test.include?(MiniTestAdapter)
      ::Minitest::Test.send(:include, MiniTestAdapter)
     end
   end
