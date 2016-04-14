@@ -222,11 +222,12 @@ module Spy
     # this returns a lambda that calls the spy object.
     # we use eval to set the spy object id as a parameter so it can be extracted
     # and looked up later using `Method#parameters`
+    SPY_ARGS_PREFIX='__spy_args_'.freeze
     def override_method
       eval <<-METHOD, binding, __FILE__, __LINE__ + 1
       __method_spy__ = self
-      lambda do |*__spy_args_#{self.object_id}, &block|
-        __method_spy__.invoke(self, __spy_args_#{self.object_id}, block, caller(1)[0])
+      lambda do |*#{SPY_ARGS_PREFIX}#{self.object_id}, &block|
+        __method_spy__.invoke(self, #{SPY_ARGS_PREFIX}#{self.object_id}, block, caller(1)[0])
       end
       METHOD
     end
@@ -364,9 +365,12 @@ module Spy
 
       # @private
       def get_spy_id(method)
-        return nil unless method.parameters[0].is_a?(Array)
-        id = method.parameters[0][1].to_s.sub!("__spy_args_", "")
-        id.to_i if id
+        if method.parameters[0].is_a?(Array) && method.parameters[0][1]
+          raw_id = method.parameters[0][1].to_s
+          if raw_id.start_with?(SPY_ARGS_PREFIX)
+            raw_id[SPY_ARGS_PREFIX.length..-1].to_i
+          end
+        end
       end
     end
   end
