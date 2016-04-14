@@ -365,14 +365,12 @@ module Spy
 
       # @private
       def get_spy_id(method)
-        return nil unless method.parameters[0].is_a?(Array) &&
-                          (raw_id = method.parameters[0][1]) &&
-                          raw_id.to_s.start_with?(SPY_ARGS_PREFIX)
-
-        slice_length = raw_id.length - SPY_ARGS_PREFIX.length
-        id = raw_id.slice(SPY_ARGS_PREFIX.length, slice_length)
-
-        id.to_i
+        if method.parameters[0].is_a?(Array) && method.parameters[0][1]
+          raw_id = method.parameters[0][1].to_s
+          if raw_id.start_with?(SPY_ARGS_PREFIX)
+            raw_id[SPY_ARGS_PREFIX.length..-1].to_i
+          end
+        end
       end
     end
   end
