@@ -1,3 +1,15 @@
+## Spy 0.4.3 (April 14, 2016) ##
+
+*   Double performance of spy lookups (@BlakeMesdag)
+
+## Spy 0.4.2 ##
+
+*   Support for minitest 5.1
+
+## Spy 0.4.1 ##
+
+*   Support for minitest 5.0
+
 ## Spy 0.4.0 (May 8, 2013) ##
 
 *   Allow `Spy#have_received_with` to accept a block
