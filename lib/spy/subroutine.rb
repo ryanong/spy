@@ -167,6 +167,7 @@ module Spy
       end
 
       @plan = Proc.new { raise exception }
+      self
     end
 
     # @overload and_throw(symbol)
