@@ -86,6 +86,18 @@ module Spy
       assert_equal result, @pen.write(nil)
     end
 
+    def test_spy_and_raise_raises_the_set_exception
+      pen_write_spy = spy_on(@pen, :write).and_raise(ArgumentError, "problems!")
+      assert_kind_of Subroutine, pen_write_spy
+      assert_equal [pen_write_spy], Agency.instance.spies
+
+      e = assert_raises ArgumentError do
+        @pen.write(nil)
+      end
+      assert_equal "problems!", e.message
+      assert pen_write_spy.has_been_called?
+    end
+
     def test_spy_and_return_can_call_a_block
       result = "hello world"
 
