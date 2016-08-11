@@ -135,13 +135,29 @@ module Spy
     # tells the spy to call the original method
     # @return [self]
     def and_call_through
-      @plan = Proc.new do |*args, &block|
-        if original_method
-          original_method.call(*args, &block)
-        else
-          base_object.send(:method_missing, method_name, *args, &block)
+      if @base_object.is_a? Class
+        @plan = Proc.new do |object, *args, &block|
+          if original_method
+            if original_method.is_a? UnboundMethod
+              bound_method = original_method.bind(object)
+              bound_method.call(*args, &block)
+            else
+              original_method.call(*args, &block)
+            end
+          else
+            base_object.send(:method_missing, method_name, *args, &block)
+          end
+        end
+      else
+        @plan = Proc.new do |*args, &block|
+          if original_method
+            original_method.call(*args, &block)
+          else
+            base_object.send(:method_missing, method_name, *args, &block)
+          end
         end
       end
+
       self
     end
 
@@ -202,10 +218,18 @@ module Spy
     # method.
     def invoke(object, args, block, called_from)
       check_arity!(args.size)
-      result = if @plan
-                 check_for_too_many_arguments!(@plan)
-                 @plan.call(*args, &block)
-               end
+
+      if base_object.is_a? Class
+        result = if @plan
+                   check_for_too_many_arguments!(@plan)
+                   @plan.call(object, *args, &block)
+                 end
+      else
+        result = if @plan
+                   check_for_too_many_arguments!(@plan)
+                   @plan.call(*args, &block)
+                 end
+      end
     ensure
       calls << CallLog.new(object, called_from, args, block, result)
     end
@@ -272,6 +296,8 @@ module Spy
       return if @do_not_check_plan_arity || arity_range.nil?
       min_arity = block.arity
       min_arity = min_arity.abs - 1 if min_arity < 0
+
+      min_arity -=1 if base_object.is_a? Class # Instance-method procs take an extra param for receiving object
 
       if min_arity > arity_range.max
         raise ArgumentError.new("block requires #{min_arity} arguments while original_method require a maximum of #{arity_range.max}")
