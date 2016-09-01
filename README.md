@@ -197,7 +197,7 @@ In your test file
 ```ruby
   def test_title
     book = Book.new
-    title_spy = Spy.on(book, title)
+    title_spy = Spy.on(book, :title)
     book.title
     book.title
 
