@@ -32,6 +32,7 @@ module Spy
     def initialize(object, method_name, singleton_method = true)
       @base_object, @method_name = object, method_name
       @singleton_method = singleton_method
+      @plan = nil
       reset!
     end
 
