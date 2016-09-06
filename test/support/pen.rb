@@ -65,13 +65,11 @@ class Pen
   end
 end
 
-another = "meta_method"
-
-Pen.define_singleton_method(:meta_method) do
-  another
+Pen.define_singleton_method(:meta_class_method) do
+  "meta_class_method".freeze
 end
 
 Pen.send(:define_method, :meta_method) do
-  another
+  "meta_method".freeze
 end
 
