@@ -1,3 +1,5 @@
+require_relative "features"
+
 class Pen
   attr_reader :written, :color
 
@@ -36,6 +38,22 @@ class Pen
 
   def another
     "another"
+  end
+
+  if Features.keyword_args?
+    def opt_kwargs(required, opt: nil, opt2: nil)
+      [required, opt: opt, opt2: opt2]
+    end
+
+    def keyrest(**kwargs)
+      kwargs
+    end
+  end
+
+  if Features.required_keyword_args?
+    def req_kwargs(req1:, req2:)
+      [req1, req2]
+    end
   end
 
   protected

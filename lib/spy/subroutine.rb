@@ -283,6 +283,8 @@ module Spy
       @arity_range ||=
         if original_method
           min = max = 0
+          key_args = false
+          opt_keys = false
           original_method.parameters.each do |type,_|
             case type
             when :req
@@ -292,7 +294,16 @@ module Spy
               max += 1
             when :rest
               max = Float::INFINITY
+            when :keyreq
+              key_args = true
+            when :keyrest, :key
+              key_args = true
+              opt_keys = true
             end
+          end
+          if key_args
+            max += 1
+            min += 1 unless opt_keys
           end
           (min..max)
         end
