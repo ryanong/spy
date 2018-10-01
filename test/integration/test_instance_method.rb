@@ -17,6 +17,12 @@ class TestAnyInstanceOf < Minitest::Test
     Spy::Agency.instance.dissolve!
   end
 
+  def test_call_through_with_instance_method
+    Spy.on_instance_method(Foo, :bar).and_call_through
+    assert_equal "foobar", Foo.new.bar
+    Spy.off_instance_method(Foo, :bar)
+  end
+
   def test_it_overides_all_methods
     assert_equal Foo.new.bar, "foobar"
     spy = Spy.on_instance_method(Foo, bar: "timshel")
