@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('pry-nav')
   gem.add_development_dependency('pry-stack_explorer')
   gem.add_development_dependency('minitest', '>= 4.5.0')
+  gem.add_development_dependency('minitest-reporters')
   gem.add_development_dependency('rspec-core')
   gem.add_development_dependency('rspec-expectations')
   gem.add_development_dependency('coveralls')
