@@ -1,9 +1,11 @@
 require 'bundler/setup'
 require 'minitest/autorun'
+require "minitest/reporters"
 require 'pry'
 require 'pry-nav'
 require 'coveralls'
 Coveralls.wear!
+Minitest::Reporters.use!
 
 require 'spy'
 

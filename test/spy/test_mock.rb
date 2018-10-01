@@ -68,6 +68,7 @@ module Spy
       end
     end
 
+    BUGGY_METHODS = %i(tap pretty_print_inspect trust untrust untrusted?)
     def test_mocked_methods
       pen_methods = Pen.public_instance_methods(false) +
         Pen.protected_instance_methods(false) +
@@ -76,8 +77,7 @@ module Spy
       assert_equal pen_methods.sort, @pen_mock.mocked_methods.sort
     end
 
-    buggy_methods = [:tap, :pretty_print_inspect]
-    methods_to_test = Object.instance_methods - buggy_methods
+    methods_to_test = Object.instance_methods - BUGGY_METHODS
     methods_to_test.each do |method_name|
       object_method = Object.instance_method(method_name)
       if object_method.arity == 0 || (RUBY_ENGINE != "jruby" && object_method.parameters == [])

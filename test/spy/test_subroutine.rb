@@ -40,13 +40,13 @@ module Spy
     end
 
     def test_spy_can_hook_and_record_a_meta_method_call_on_a_constant
-      assert_equal "meta_method", Pen.meta_method
-      meta_spy = spy_on(Pen, :meta_method)
+      assert_equal "meta_class_method", Pen.meta_class_method
+      meta_spy = spy_on(Pen, :meta_class_method)
       refute meta_spy.has_been_called?
-      assert_nil Pen.meta_method
+      assert_nil Pen.meta_class_method
       assert meta_spy.has_been_called?
       meta_spy.unhook
-      assert_equal "meta_method", Pen.meta_method
+      assert_equal "meta_class_method", Pen.meta_class_method
     end
 
     def test_spy_can_hook_record_and_unhook_a_meta_method
