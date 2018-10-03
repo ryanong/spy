@@ -199,39 +199,35 @@ module Spy
       end
     end
 
-    if Features.keyword_args?
-      def test_that_method_spy_keeps_arity_with_optional_keyword_args
-        spy_on(@pen, :opt_kwargs)
-        @pen.opt_kwargs(:pos1)
-        @pen.opt_kwargs(:pos1, opt: 1, opt2: 2)
-        assert_raises ArgumentError do
-          @pen.opt_kwargs
-        end
-        assert_raises ArgumentError do
-          @pen.opt_kwargs(:pos1, :pos2, opt: 1)
-        end
+    def test_that_method_spy_keeps_arity_with_optional_keyword_args
+      spy_on(@pen, :opt_kwargs)
+      @pen.opt_kwargs(:pos1)
+      @pen.opt_kwargs(:pos1, opt: 1, opt2: 2)
+      assert_raises ArgumentError do
+        @pen.opt_kwargs
       end
-
-      def test_that_method_spy_keeps_arity_with_keyword_splat
-        spy_on(@pen, :keyrest)
-        @pen.keyrest
-        @pen.keyrest(a: 1, b: 2)
-        assert_raises ArgumentError do
-          @pen.keyrest(:pos1, :pos2)
-        end
+      assert_raises ArgumentError do
+        @pen.opt_kwargs(:pos1, :pos2, opt: 1)
       end
     end
 
-    if Features.required_keyword_args?
-      def test_that_method_spy_keeps_arity_with_required_keyword_args
-        spy_on(@pen, :req_kwargs)
-        @pen.req_kwargs(req1: 1, req2: 2)
-        assert_raises ArgumentError do
-          @pen.req_kwargs
-        end
-        assert_raises ArgumentError do
-          @pen.req_kwargs(:pos1, :pos2)
-        end
+    def test_that_method_spy_keeps_arity_with_keyword_splat
+      spy_on(@pen, :keyrest)
+      @pen.keyrest
+      @pen.keyrest(a: 1, b: 2)
+      assert_raises ArgumentError do
+        @pen.keyrest(:pos1, :pos2)
+      end
+    end
+
+    def test_that_method_spy_keeps_arity_with_required_keyword_args
+      spy_on(@pen, :req_kwargs)
+      @pen.req_kwargs(req1: 1, req2: 2)
+      assert_raises ArgumentError do
+        @pen.req_kwargs
+      end
+      assert_raises ArgumentError do
+        @pen.req_kwargs(:pos1, :pos2)
       end
     end
 

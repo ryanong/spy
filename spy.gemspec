@@ -6,7 +6,7 @@ require 'spy/version'
 Gem::Specification.new do |gem|
   gem.name          = "spy"
   gem.version       = Spy::VERSION
-  gem.required_ruby_version = '>= 1.9.3'
+  gem.required_ruby_version = '>= 2.1.0'
   gem.license       = 'MIT'
   gem.authors       = ["Ryan Ong"]
   gem.email         = ["ryanong@gmail.com"]
