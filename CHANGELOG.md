@@ -1,6 +1,7 @@
-## Spy 0.4.3 (Not Released) ##
+## Spy 1.0.0 (October 10, 2018) ##
 
-*   Not Released
+*   drop support for ruby 1.9.3, 2.0. Only support 2.1+ (@dylanahsmith)
+*   support named arguments (@dylanahsmith)
 
 ## Spy 0.4.3 (April 14, 2016) ##
 

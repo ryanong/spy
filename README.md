@@ -9,7 +9,8 @@
 
 Spy is a lightweight stubbing framework with support for method spies, constant stubs, and object mocks.
 
-Spy was designed for 1.9.3+.
+Spy supports ruby 2.1.0+.
+For versions less than 2.1 use v0.4.5
 
 Spy features that were completed were tested against the rspec-mocks tests so it covers all cases that rspec-mocks does.
 
