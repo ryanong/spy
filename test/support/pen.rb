@@ -38,6 +38,18 @@ class Pen
     "another"
   end
 
+  def opt_kwargs(required, opt: nil, opt2: nil)
+    [required, opt: opt, opt2: opt2]
+  end
+
+  def keyrest(**kwargs)
+    kwargs
+  end
+
+  def req_kwargs(req1:, req2:)
+    [req1, req2]
+  end
+
   protected
   def protected_method
   end
