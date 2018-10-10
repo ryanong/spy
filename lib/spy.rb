@@ -34,8 +34,6 @@ module Spy
         spy = Subroutine.get(base_object, method_name)
         if spy
           spy.unhook
-        else
-          raise NoSpyError, "#{method_name} was not hooked on #{base_object.inspect}."
         end
       end
 
