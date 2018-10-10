@@ -30,7 +30,7 @@ class TestConstantSpying < Minitest::Test
     assert_equal "hello world", Foo.hello
 
     spy = Spy.on_const(Foo, :HELLO)
-    assert_equal nil, Foo.hello
+    assert_nil Foo.hello
     spy.and_return("awesome")
     assert_equal "awesome", Foo.hello
 
@@ -39,7 +39,7 @@ class TestConstantSpying < Minitest::Test
 
     assert_equal "hello world", Foo::Bar.hello
     spy = Spy.on_const(Foo, :HELLO)
-    assert_equal nil, Foo::Bar.hello
+    assert_nil Foo::Bar.hello
     spy.and_return("awesome")
     assert_equal "awesome", Foo::Bar.hello
 
@@ -48,7 +48,7 @@ class TestConstantSpying < Minitest::Test
 
     assert_equal "hello world", ChildFoo.hello
     spy = Spy.on_const(Foo, :HELLO)
-    assert_equal nil, ChildFoo.hello
+    assert_nil ChildFoo.hello
     spy.and_return("awesome")
     assert_equal "awesome", ChildFoo.hello
 
