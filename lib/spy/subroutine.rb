@@ -52,8 +52,15 @@ module Spy
         @original_method = current_method
       end
 
-      define_method_with = singleton_method ? :define_singleton_method : :define_method
-      base_object.send(define_method_with, method_name, override_method)
+      if original_method && original_method.owner == base_object
+        original_method.owner.send(:remove_method, method_name)
+      end
+
+      if singleton_method
+        base_object.define_singleton_method(method_name, override_method)
+      else
+        base_object.define_method(method_name, override_method)
+      end
 
       if [:public, :protected, :private].include? hook_opts[:visibility]
         method_owner.send(hook_opts[:visibility], method_name)
@@ -71,8 +78,8 @@ module Spy
 
       method_owner.send(:remove_method, method_name)
       if original_method && method_owner == original_method.owner
-        method_owner.send(:define_method, method_name, original_method)
-        method_owner.send(original_method_visibility, method_name) if original_method_visibility
+        original_method.owner.send(:define_method, method_name, original_method)
+        original_method.owner.send(original_method_visibility, method_name) if original_method_visibility
       end
 
       clear_method!
