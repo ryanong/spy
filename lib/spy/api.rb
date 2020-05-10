@@ -36,8 +36,8 @@ module Spy
         end
       end
 
-      def with(*args)
-        @with = block_given? ? Proc.new : args
+      def with(*args, &block)
+        @with = block_given? ? block : args
         self
       end
 
