@@ -16,12 +16,12 @@ class TestSpy < Minitest::Test
 
     assert_kind_of Spy::Subroutine, pen_write_spy
     assert_kind_of Spy::Subroutine, pen_write_hello_spy
-    assert_equal [pen_write_spy, pen_write_hello_spy], Spy::Agency.instance.subroutines
+    assert_equal [pen_write_spy, pen_write_hello_spy], Spy::Agency.instance.spies
     assert pen_write_spy.has_been_called?
     assert pen_write_hello_spy.has_been_called?
   end
 
-  def test_spy_on_hooks_and_saves_spy_with_array
+  def test_spy_on_hooks_and_saves_spy_with_hash
     pen_write_spy, pen_write_hello_spy = Spy.on(@pen, write: "hello", write_hello: "world")
     assert_equal "hello", @pen.write(nil)
     assert_equal "world", @pen.write_hello

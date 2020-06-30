@@ -157,7 +157,7 @@ module Spy
       assert pen_write_spy.has_been_called_with?("hello")
     end
 
-    def test_spy_hook_records_number_of_calls
+    def test_spy_hook_records_number_of_calls2
       args = ["hello world"]
       block = Proc.new {}
       pen_write_spy = spy_on(@pen, :write)

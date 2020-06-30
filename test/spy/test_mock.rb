@@ -68,7 +68,7 @@ module Spy
       end
     end
 
-    BUGGY_METHODS = %i(tap pretty_print_inspect trust untrust untrusted? debugger byebug)
+    BUGGY_METHODS = %i(tap pretty_print_inspect trust untrust untrusted? debugger byebug taint untaint tainted?)
     def test_mocked_methods
       pen_methods = Pen.public_instance_methods(false) +
         Pen.protected_instance_methods(false) +
