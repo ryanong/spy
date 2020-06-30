@@ -57,8 +57,14 @@ module Spy
       end
 
       if singleton_method
+        if base_object.singleton_class.method_defined?(method_name) || base_object.singleton_class.private_method_defined?(method_name)
+          base_object.singleton_class.alias_method(method_name, method_name)
+        end
         base_object.define_singleton_method(method_name, override_method)
       else
+        if base_object.method_defined?(method_name) || base_object.private_method_defined?(method_name)
+          base_object.alias_method(method_name, method_name)
+        end
         base_object.define_method(method_name, override_method)
       end
 
@@ -111,7 +117,7 @@ module Spy
     #   spy.and_return(force: true) { |invalid_arity| true }
     #
     # @return [self]
-    def and_return(value = nil)
+    def and_return(value = nil, &block)
       @do_not_check_plan_arity = false
 
       if block_given?
@@ -121,7 +127,7 @@ module Spy
           raise ArgumentError, "value and block conflict. Choose one"
         end
 
-        @plan = Proc.new
+        @plan = block
         check_for_too_many_arguments!(@plan)
       else
         @plan = Proc.new { value }
@@ -215,9 +221,9 @@ module Spy
     # check if the method was called with the exact arguments
     # @param args Arguments that should have been sent to the method
     # @return [Boolean]
-    def has_been_called_with?(*args)
+    def has_been_called_with?(*args, &block)
       raise NeverHookedError unless @was_hooked
-      match = block_given? ? Proc.new : proc { |call| call.args == args }
+      match = block_given? ? block : proc { |call| call.args == args }
       calls.any?(&match)
     end
 
