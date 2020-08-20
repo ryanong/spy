@@ -1,7 +1,14 @@
+## Spy 1.0.1 (August 20th, 2020) ##
+
+*   Fix call_through w/ instance methods (@lreeves)
+*   Replace implicit Proc.new by explicit given block reference (@Hugo-Hache)
+*   Remove 2.7 warnings (@byroot)
+
 ## Spy 1.0.0 (October 10, 2018) ##
 
 *   drop support for ruby 1.9.3, 2.0. Only support 2.1+ (@dylanahsmith)
 *   support named arguments (@dylanahsmith)
+*   Fix readme (@ignat-z)
 
 ## Spy 0.4.3 (April 14, 2016) ##
 
