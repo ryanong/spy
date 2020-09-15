@@ -58,14 +58,14 @@ module Spy
 
       if singleton_method
         if base_object.singleton_class.method_defined?(method_name) || base_object.singleton_class.private_method_defined?(method_name)
-          base_object.singleton_class.alias_method(method_name, method_name)
+          base_object.singleton_class.send(:alias_method, method_name, method_name)
         end
         base_object.define_singleton_method(method_name, override_method)
       else
         if base_object.method_defined?(method_name) || base_object.private_method_defined?(method_name)
-          base_object.alias_method(method_name, method_name)
+          base_object.send(:alias_method, method_name, method_name)
         end
-        base_object.define_method(method_name, override_method)
+        base_object.send(:define_method, method_name, override_method)
       end
 
       if [:public, :protected, :private].include? hook_opts[:visibility]
