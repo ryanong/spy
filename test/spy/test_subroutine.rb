@@ -6,6 +6,10 @@ module Spy
       Subroutine.new(base_object, method_name).hook
     end
 
+    def spy_on_instance_method(base_object, method_name)
+      Subroutine.new(base_object, method_name, false).hook
+    end
+
     def setup
       @pen = Pen.new
     end
@@ -135,6 +139,52 @@ module Spy
         string
       end
       assert_equal string, result
+    end
+
+    def test_spy_and_call_through_returns_original_method_result
+      string = "hello world"
+
+      write_spy = spy_on(@pen, :write).and_call_through
+      another_spy = spy_on(@pen, :another).and_call_through
+
+      result = @pen.write(string)
+
+      assert_equal string, result
+      assert write_spy.has_been_called?
+      assert_equal 'another', @pen.another
+      assert another_spy.has_been_called?
+    end
+
+    def test_spy_on_instance_and_call_through_returns_original_method_result
+      string = "hello world"
+
+      inst_write_spy = spy_on_instance_method(Pen, :write).and_call_through
+      inst_another_spy = spy_on_instance_method(Pen, :another).and_call_through
+
+      result = @pen.write(string)
+
+      assert_equal string, result
+      assert inst_write_spy.has_been_called?
+      assert_equal 'another', @pen.another
+      assert inst_another_spy.has_been_called?
+    end
+
+    def test_spy_on_instance_and_call_through_to_aryable
+      to_aryable = Class.new do
+        def hello
+          'hello'
+        end
+
+        def to_ary
+          [1]
+        end
+      end
+
+      inst_hello_spy = spy_on_instance_method(to_aryable, :hello).and_call_through
+      inst = to_aryable.new
+
+      assert_equal 'hello', inst.hello
+      assert inst_hello_spy.has_been_called?
     end
 
     def test_spy_hook_records_number_of_calls

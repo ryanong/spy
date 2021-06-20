@@ -33,6 +33,7 @@ module Spy
       @base_object, @method_name = object, method_name
       @singleton_method = singleton_method
       @plan = nil
+      @call_through = false
       reset!
     end
 
@@ -148,28 +149,7 @@ module Spy
     # tells the spy to call the original method
     # @return [self]
     def and_call_through
-      if @base_object.is_a? Class
-        @plan = Proc.new do |object, *args, &block|
-          if original_method
-            if original_method.is_a? UnboundMethod
-              bound_method = original_method.bind(object)
-              bound_method.call(*args, &block)
-            else
-              original_method.call(*args, &block)
-            end
-          else
-            base_object.send(:method_missing, method_name, *args, &block)
-          end
-        end
-      else
-        @plan = Proc.new do |*args, &block|
-          if original_method
-            original_method.call(*args, &block)
-          else
-            base_object.send(:method_missing, method_name, *args, &block)
-          end
-        end
-      end
+      @call_through = true
 
       self
     end
@@ -232,17 +212,18 @@ module Spy
     def invoke(object, args, block, called_from)
       check_arity!(args.size)
 
-      if base_object.is_a? Class
-        result = if @plan
-                   check_for_too_many_arguments!(@plan)
-                   @plan.call(object, *args, &block)
-                 end
-      else
-        result = if @plan
-                   check_for_too_many_arguments!(@plan)
-                   @plan.call(*args, &block)
-                 end
-      end
+      result =
+        if @call_through
+          call_through_plan = build_call_through_plan(object)
+          call_through_plan.call(*args, &block)
+        elsif @plan
+          check_for_too_many_arguments!(@plan)
+          if base_object.is_a? Class
+            @plan.call(object, *args, &block)
+          else
+            @plan.call(*args, &block)
+          end
+        end
     ensure
       calls << CallLog.new(object, called_from, args, block, result)
     end
@@ -353,6 +334,20 @@ module Spy
 
     def method_owner
       @method_owner ||= current_method.owner
+    end
+
+    def build_call_through_plan(object)
+      if original_method
+        if @base_object.is_a?(Class) && original_method.is_a?(UnboundMethod)
+          original_method.bind(object)
+        else
+          original_method
+        end
+      else
+        Proc.new do |*args, &block|
+          base_object.send(:method_missing, method_name, *args, &block)
+        end
+      end
     end
 
     class << self
