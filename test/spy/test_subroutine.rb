@@ -113,6 +113,15 @@ module Spy
       assert_empty @pen.written
     end
 
+    def test_spy_and_return_can_call_a_block_with_hash
+      result = "hello world"
+
+      spy_on(@pen, :write_hash).and_return { |**opts| opts[:test] }
+
+      assert_equal result, @pen.write_hash(test: result)
+      assert_empty @pen.written
+    end
+
     def test_spy_and_return_can_call_a_block_raises_when_there_is_an_arity_mismatch
       write_spy = spy_on(@pen, :write)
       write_spy.and_return do |*args|
@@ -155,6 +164,16 @@ module Spy
       assert another_spy.has_been_called?
     end
 
+    def test_spy_and_call_through_with_hash_original_method
+      string = 'test:hello world'
+
+      write_spy = spy_on(@pen, :write_hash).and_call_through
+
+      @pen.write_hash(test: 'hello world')
+      assert_equal string, @pen.written.last
+      assert write_spy.has_been_called?
+    end
+
     def test_spy_on_instance_and_call_through_returns_original_method_result
       string = "hello world"
 
@@ -167,6 +186,17 @@ module Spy
       assert inst_write_spy.has_been_called?
       assert_equal 'another', @pen.another
       assert inst_another_spy.has_been_called?
+    end
+
+    def test_spy_on_instance_and_call_through_with_hash
+      string = 'test:hello world'
+
+      inst_write_spy = spy_on_instance_method(Pen, :write_hash).and_call_through
+
+      @pen.write_hash(test: 'hello world')
+
+      assert_equal string, @pen.written.last
+      assert inst_write_spy.has_been_called?
     end
 
     def test_spy_on_instance_and_call_through_to_aryable

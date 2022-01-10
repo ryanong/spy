@@ -27,6 +27,12 @@ class Pen
     end
   end
 
+  def write_hash(**params)
+    params.each do |p|
+      write(p.join(':'))
+    end
+  end
+
   def greet(hello = "hello", name)
     write("#{hello} #{name}")
   end
