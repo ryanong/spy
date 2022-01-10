@@ -214,14 +214,13 @@ module Spy
 
       result =
         if @call_through
-          call_through_plan = build_call_through_plan(object)
-          call_through_plan.call(*args, &block)
+          call_plan(build_call_through_plan(object), block, *args)
         elsif @plan
           check_for_too_many_arguments!(@plan)
           if base_object.is_a? Class
-            @plan.call(object, *args, &block)
+            call_plan(@plan, block, object, *args)
           else
-            @plan.call(*args, &block)
+            call_plan(@plan, block, *args)
           end
         end
     ensure
@@ -348,6 +347,25 @@ module Spy
           base_object.send(:method_missing, method_name, *args, &block)
         end
       end
+    end
+
+    def call_plan(plan, block, *args)
+      if ruby_27_last_arg_hash?(args)
+        *prefix, last = args
+        plan.call(*prefix, **last, &block)
+      else
+        plan.call(*args, &block)
+      end
+    end
+
+    # Ruby 2.7 gives a deprecation warning about passing hash as last argument for a method
+    # with a double-splat operator (**), and Ruby 3 raises an ArgumentError exception.
+    # This checks if args has a hash as last element to extract it and pass it with double-splat to avoid an exception.
+    def ruby_27_last_arg_hash?(args)
+      last = args.last
+      last.instance_of?(Hash) &&
+        !last.empty? &&
+        Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.7.0")
     end
 
     class << self
