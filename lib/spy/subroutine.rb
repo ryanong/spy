@@ -217,11 +217,7 @@ module Spy
           call_plan(build_call_through_plan(object), block, *args)
         elsif @plan
           check_for_too_many_arguments!(@plan)
-          if base_object.is_a? Class
-            call_plan(@plan, block, object, *args)
-          else
-            call_plan(@plan, block, *args)
-          end
+          call_plan(@plan, block, *args)
         end
     ensure
       calls << CallLog.new(object, called_from, args, block, result)
