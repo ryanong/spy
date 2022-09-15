@@ -84,7 +84,7 @@ module Spy
       raise NeverHookedError, "'#{method_name}' method has not been hooked" unless hooked?
 
       method_owner.send(:remove_method, method_name)
-      if original_method #&& method_owner == original_method.owner
+      if original_method
         original_method.owner.send(:define_method, method_name, original_method)
         original_method.owner.send(original_method_visibility, method_name) if original_method_visibility
       end
