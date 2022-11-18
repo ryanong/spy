@@ -150,6 +150,14 @@ module Spy
       assert_equal string, result
     end
 
+    def test_spy_and_call_through_with_hash_and_keyword_args
+      spy_on(@pen, 'hash_and_keyword_arg').and_call_through
+      hsh = { hello: 'world' }
+
+      assert_equal [hsh, nil], @pen.hash_and_keyword_arg(hsh)
+      assert_equal [hsh, 'foo'], @pen.hash_and_keyword_arg(hsh, keyword: 'foo')
+    end
+
     def test_spy_and_call_through_returns_original_method_result
       string = "hello world"
 
