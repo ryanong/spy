@@ -209,15 +209,17 @@ module Spy
 
     # invoke that the method has been called. You really shouldn't use this
     # method.
-    def invoke(object, args, block, called_from)
-      check_arity!(args.size)
+    def invoke(object, args, kwargs, block, called_from)
+      arity = args.size
+      arity += 1 if kwargs.present?
+      check_arity!(arity)
 
       result =
         if @call_through
-          call_plan(build_call_through_plan(object), block, *args)
+          call_plan(build_call_through_plan(object), block, *args, **kwargs)
         elsif @plan
           check_for_too_many_arguments!(@plan)
-          call_plan(@plan, block, *args)
+          call_plan(@plan, block, *args, **kwargs)
         end
     ensure
       calls << CallLog.new(object, called_from, args, block, result)
@@ -237,11 +239,12 @@ module Spy
     # we use eval to set the spy object id as a parameter so it can be extracted
     # and looked up later using `Method#parameters`
     SPY_ARGS_PREFIX='__spy_args_'.freeze
+    SPY_KWARGS_PREFIX='__spy_kwargs_'.freeze
     def override_method
       eval <<-METHOD, binding, __FILE__, __LINE__ + 1
       __method_spy__ = self
-      lambda do |*#{SPY_ARGS_PREFIX}#{self.object_id}, &block|
-        __method_spy__.invoke(self, #{SPY_ARGS_PREFIX}#{self.object_id}, block, caller(1)[0])
+      lambda do |*#{SPY_ARGS_PREFIX}#{self.object_id}, **#{SPY_KWARGS_PREFIX}#{self.object_id}, &block|
+        __method_spy__.invoke(self, #{SPY_ARGS_PREFIX}#{self.object_id}, #{SPY_KWARGS_PREFIX}#{self.object_id}, block, caller(1)[0])
       end
       METHOD
     end
@@ -345,23 +348,8 @@ module Spy
       end
     end
 
-    def call_plan(plan, block, *args)
-      if ruby_27_last_arg_hash?(args)
-        *prefix, last = args
-        plan.call(*prefix, **last, &block)
-      else
-        plan.call(*args, &block)
-      end
-    end
-
-    # Ruby 2.7 gives a deprecation warning about passing hash as last argument for a method
-    # with a double-splat operator (**), and Ruby 3 raises an ArgumentError exception.
-    # This checks if args has a hash as last element to extract it and pass it with double-splat to avoid an exception.
-    def ruby_27_last_arg_hash?(args)
-      last = args.last
-      last.instance_of?(Hash) &&
-        !last.empty? &&
-        Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.7.0")
+    def call_plan(plan, block, *args, **kwargs)
+      plan.call(*args, **kwargs, &block)
     end
 
     class << self
