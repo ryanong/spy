@@ -245,6 +245,20 @@ module Spy
       assert pen_write_spy.has_been_called_with?("hello")
     end
 
+    def test_has_been_called_with_kwargs
+      pen_write_spy = spy_on(@pen, :opt_kwargs)
+      refute pen_write_spy.has_been_called_with?("hello")
+
+      @pen.opt_kwargs("hello")
+      assert pen_write_spy.has_been_called_with?("hello")
+
+      @pen.opt_kwargs("world", opt: "hello")
+      assert pen_write_spy.has_been_called_with?("world", opt: "hello")
+
+      @pen.opt_kwargs("hello world", opt: "world", opt2: "hello")
+      assert pen_write_spy.has_been_called_with?("hello world", opt: "world", opt2: "hello")
+    end
+
     def test_spy_hook_records_number_of_calls2
       args = ["hello world"]
       block = Proc.new {}
