@@ -10,6 +10,9 @@ module Spy
     # @!attribute [r] args
     #   @return [Array] arguments were sent to the method
     #
+    # @!attribute [r] kwargs
+    #   @return [Array] keyword arguments were sent to the method
+    #
     # @!attribute [r] block
     #   @return [Proc] the block that was sent to the method
     #
@@ -17,10 +20,10 @@ module Spy
     #   @return The result of the method of being stubbed, or called through
 
 
-    attr_reader :object, :called_from, :args, :block, :result
+    attr_reader :object, :called_from, :args, :kwargs, :block, :result
 
-    def initialize(object, called_from, args, block, result)
-      @object, @called_from, @args, @block, @result = object, called_from, args, block, result
+    def initialize(object, called_from, args, kwargs, block, result)
+      @object, @called_from, @args, @kwargs, @block, @result = object, called_from, args, kwargs, block, result
     end
   end
 end

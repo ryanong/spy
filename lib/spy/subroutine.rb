@@ -201,9 +201,9 @@ module Spy
     # check if the method was called with the exact arguments
     # @param args Arguments that should have been sent to the method
     # @return [Boolean]
-    def has_been_called_with?(*args, &block)
+    def has_been_called_with?(*args, **kwargs, &block)
       raise NeverHookedError unless @was_hooked
-      match = block_given? ? block : proc { |call| call.args == args }
+      match = block_given? ? block : proc { |call| call.args == args && call.kwargs == kwargs }
       calls.any?(&match)
     end
 
@@ -222,7 +222,7 @@ module Spy
           call_plan(@plan, block, *args, **kwargs)
         end
     ensure
-      calls << CallLog.new(object, called_from, args, block, result)
+      calls << CallLog.new(object, called_from, args, kwargs, block, result)
     end
 
     # reset the call log
