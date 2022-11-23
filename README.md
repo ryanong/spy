@@ -9,8 +9,7 @@
 
 Spy is a lightweight stubbing framework with support for method spies, constant stubs, and object mocks.
 
-Spy supports ruby 2.1.0+.
-For versions less than 2.1 use v0.4.5
+Spy supports ruby 2.7.0+.
 
 Spy features that were completed were tested against the rspec-mocks tests so it covers all cases that rspec-mocks does.
 
@@ -47,7 +46,7 @@ Fail faster, code faster.
   * you can usually just check the call logs.
   * if you do need to use this. It is probably a code smell. You either need to abstract your method more or add separate tests.
 * you want to use dumb double, Spy has smart mocks, they are better
-* you use `mock_model` and `stub_model` (I want to impliment this soon)
+* you use `mock_model` and `stub_model`
 
 ## Installation
 
@@ -87,7 +86,7 @@ Spy::Subroutine.new(book, :flamethrower).hook(force:true).and_return("burnninant
 ```
 
 You can also stub instance methods of Classes and Modules. This is equivalent to
-rspec-mock's `Module#any_instance`
+rspec-mock's `allow_any_instance_of(Module)`
 
 ```ruby
 Spy.on_instance_method(Book, :title).and_return("Cannery Row")
