@@ -37,6 +37,10 @@ class Pen
     write("#{hello} #{name}")
   end
 
+  def hash_and_keyword_arg(hsh, keyword: nil)
+    [hsh, keyword]
+  end
+
   def public_method
   end
 

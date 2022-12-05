@@ -150,6 +150,14 @@ module Spy
       assert_equal string, result
     end
 
+    def test_spy_and_call_through_with_hash_and_keyword_args
+      spy_on(@pen, 'hash_and_keyword_arg').and_call_through
+      hsh = { hello: 'world' }
+
+      assert_equal [hsh, nil], @pen.hash_and_keyword_arg(hsh)
+      assert_equal [hsh, 'foo'], @pen.hash_and_keyword_arg(hsh, keyword: 'foo')
+    end
+
     def test_spy_and_call_through_returns_original_method_result
       string = "hello world"
 
@@ -235,6 +243,20 @@ module Spy
       assert pen_write_spy.has_been_called_with?("hello")
       @pen.write("hello world")
       assert pen_write_spy.has_been_called_with?("hello")
+    end
+
+    def test_has_been_called_with_kwargs
+      pen_write_spy = spy_on(@pen, :opt_kwargs)
+      refute pen_write_spy.has_been_called_with?("hello")
+
+      @pen.opt_kwargs("hello")
+      assert pen_write_spy.has_been_called_with?("hello")
+
+      @pen.opt_kwargs("world", opt: "hello")
+      assert pen_write_spy.has_been_called_with?("world", opt: "hello")
+
+      @pen.opt_kwargs("hello world", opt: "world", opt2: "hello")
+      assert pen_write_spy.has_been_called_with?("hello world", opt: "world", opt2: "hello")
     end
 
     def test_spy_hook_records_number_of_calls2
