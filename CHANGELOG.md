@@ -1,3 +1,19 @@
+## Spy 1.0.4 (December 21th, 2022) ##
+
+* Hash as argument got turned into keyword arguments (@svenpl)
+* drop support for ruby older than 2.7 (@ryanong)
+
+## Spy 1.0.3 (September 15, 2022) ##
+
+* Fix private method call errors for older ruby versions (@dylanahsmith)
+* `Spy.on_instance_method` and `and_call_through` on `#to_ary-able` class causes an error (@mizukami234)
+* Fix `and_return` on class method (@jfirebaugh)
+
+## Spy 1.0.2 (January 10, 2022) ##
+
+* Fix subroutine call with hash as last arg (@dtheo-ad)
+* Ruby 2.7+ support (@casperisfine)
+
 ## Spy 1.0.1 (August 20th, 2020) ##
 
 *   Fix call_through w/ instance methods (@lreeves)
