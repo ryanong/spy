@@ -1,5 +1,9 @@
 ## Spy 1.0.4 (December 21th, 2022) ##
 
+* remove usage of #present? (@ryanong)
+
+## Spy 1.0.4 (December 21th, 2022) ##
+
 * Hash as argument got turned into keyword arguments (@svenpl)
 * drop support for ruby older than 2.7 (@ryanong)
 
