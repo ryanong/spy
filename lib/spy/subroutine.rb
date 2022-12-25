@@ -211,7 +211,7 @@ module Spy
     # method.
     def invoke(object, args, kwargs, block, called_from)
       arity = args.size
-      arity += 1 if kwargs.present?
+      arity += 1 if !kwargs&.empty?
       check_arity!(arity)
 
       result =
