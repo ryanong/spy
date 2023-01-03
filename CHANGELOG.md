@@ -1,4 +1,4 @@
-## Spy 1.0.4 (December 21th, 2022) ##
+## Spy 1.0.5 (December 25th, 2022) ##
 
 * remove usage of #present? (@ryanong)
 
